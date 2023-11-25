@@ -9,12 +9,11 @@ import time
 import logging
 import google.cloud.logging
 
-from sets import Set
 from flask_cors import CORS
-from database import Database
+from .database import Database
 from flask_compress import Compress
 from flask import Flask, request, jsonify
-from helpers import InvalidRequest, fetch_wikipedia_pages_info
+from .helpers import InvalidRequest, fetch_wikipedia_pages_info
 
 
 # Connect to the SDOW database.
@@ -133,7 +132,7 @@ def shortest_paths_route():
   # Paths found
   else:
     # Get a list of all IDs
-    page_ids_set = Set()
+    page_ids_set = set()
     for path in paths:
       for page_id in path:
         page_ids_set.add(str(page_id))
