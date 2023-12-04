@@ -6,10 +6,12 @@ set -euo pipefail
 # UNIX commands.
 export LC_ALL=C
 
+WLANG=fr
+
 # By default, the latest Wikipedia dump will be downloaded. If a download date in the format
 # YYYYMMDD is provided as the first argument, it will be used instead.
 if [[ $# -eq 0 ]]; then
-  DOWNLOAD_DATE=$(wget -q -O- https://dumps.wikimedia.your.org/enwiki/ | grep -Po '\d{8}' | sort | tail -n1)
+  DOWNLOAD_DATE=$(wget -q -O- https://dumps.wikimedia.org/${WLANG}wiki/ | grep -Po '\d{8}' | sort | tail -n1)
 else
   if [ ${#1} -ne 8 ]; then
     echo "[ERROR] Invalid download date provided: $1"
@@ -22,13 +24,13 @@ fi
 ROOT_DIR=`pwd`
 OUT_DIR="dump"
 
-DOWNLOAD_URL="https://dumps.wikimedia.your.org/enwiki/$DOWNLOAD_DATE"
-TORRENT_URL="https://tools.wmflabs.org/dump-torrents/enwiki/$DOWNLOAD_DATE"
+DOWNLOAD_URL="https://dumps.wikimedia.org/${WLANG}wiki/$DOWNLOAD_DATE"
+TORRENT_URL="https://tools.wmflabs.org/dump-torrents/${WLANG}wiki/$DOWNLOAD_DATE"
 
-SHA1SUM_FILENAME="enwiki-$DOWNLOAD_DATE-sha1sums.txt"
-REDIRECTS_FILENAME="enwiki-$DOWNLOAD_DATE-redirect.sql.gz"
-PAGES_FILENAME="enwiki-$DOWNLOAD_DATE-page.sql.gz"
-LINKS_FILENAME="enwiki-$DOWNLOAD_DATE-pagelinks.sql.gz"
+SHA1SUM_FILENAME="${WLANG}wiki-$DOWNLOAD_DATE-sha1sums.txt"
+REDIRECTS_FILENAME="${WLANG}wiki-$DOWNLOAD_DATE-redirect.sql.gz"
+PAGES_FILENAME="${WLANG}wiki-$DOWNLOAD_DATE-page.sql.gz"
+LINKS_FILENAME="${WLANG}wiki-$DOWNLOAD_DATE-pagelinks.sql.gz"
 
 
 # Make the output directory if it doesn't already exist and move to it
@@ -92,7 +94,9 @@ if [ ! -f redirects.txt.gz ]; then
   # Replace namespace with a tab
   # Remove everything starting at the to page name's closing apostrophe
   # Zip into output file
-  time pigz -dc $REDIRECTS_FILENAME \
+  pv $REDIRECTS_FILENAME \
+    | gunzip \
+    | tr -cd "[:print:]\n" \
     | sed -n 's/^INSERT INTO `redirect` VALUES (//p' \
     | sed -e 's/),(/\'$'\n/g' \
     | egrep "^[0-9]+,0," \
@@ -115,7 +119,9 @@ if [ ! -f pages.txt.gz ]; then
   # Replace namespace with a tab
   # Splice out the page title and whether or not the page is a redirect
   # Zip into output file
-  time pigz -dc $PAGES_FILENAME \
+  pv $PAGES_FILENAME \
+    | gunzip \
+    | tr -cd "[:print:]\n" \
     | sed -n 's/^INSERT INTO `page` VALUES (//p' \
     | sed -e 's/),(/\'$'\n/g' \
     | egrep "^[0-9]+,0," \
@@ -138,12 +144,15 @@ if [ ! -f links.txt.gz ]; then
   # Replace namespace with a tab
   # Remove everything starting at the to page name's closing apostrophe
   # Zip into output file
-  time pigz -dc $LINKS_FILENAME \
+  pv $LINKS_FILENAME \
+    | gunzip \
+    | tr -cd "[:print:]\n" \
     | sed -n 's/^INSERT INTO `pagelinks` VALUES (//p' \
     | sed -e 's/),(/\'$'\n/g' \
-    | egrep "^[0-9]+,0,.*,0$" \
+    | egrep "^[0-9]+,0,.*,0,[0-9]+$" \
+    | sed 's/,0,[0-9]\+$//' \
+    | sed "s/'$//" \
     | sed -e $"s/,0,'/\t/g" \
-    | sed -e "s/',0//g" \
     | pigz --fast > links.txt.gz.tmp
   mv links.txt.gz.tmp links.txt.gz
 else
@@ -190,7 +199,8 @@ fi
 if [ ! -f links.sorted_by_source_id.txt.gz ]; then
   echo
   echo "[INFO] Sorting links file by source page ID"
-  time pigz -dc links.with_ids.txt.gz \
+  pv links.with_ids.txt.gz \
+    | gunzip \
     | sort -S 80% -t $'\t' -k 1n,1n \
     | uniq \
     | pigz --fast > links.sorted_by_source_id.txt.gz.tmp
@@ -202,7 +212,8 @@ fi
 if [ ! -f links.sorted_by_target_id.txt.gz ]; then
   echo
   echo "[INFO] Sorting links file by target page ID"
-  time pigz -dc links.with_ids.txt.gz \
+  pv links.with_ids.txt.gz \
+    | gunzip \
     | sort -S 80% -t $'\t' -k 2n,2n \
     | uniq \
     | pigz --fast > links.sorted_by_target_id.txt.gz.tmp
@@ -218,7 +229,8 @@ fi
 if [ ! -f links.grouped_by_source_id.txt.gz ]; then
   echo
   echo "[INFO] Grouping source links file by source page ID"
-  time pigz -dc links.sorted_by_source_id.txt.gz \
+  pv links.sorted_by_source_id.txt.gz \
+   | gunzip \
    | awk -F '\t' '$1==last {printf "|%s",$2; next} NR>1 {print "";} {last=$1; printf "%s\t%s",$1,$2;} END{print "";}' \
    | pigz --fast > links.grouped_by_source_id.txt.gz.tmp
   mv links.grouped_by_source_id.txt.gz.tmp links.grouped_by_source_id.txt.gz
@@ -229,7 +241,8 @@ fi
 if [ ! -f links.grouped_by_target_id.txt.gz ]; then
   echo
   echo "[INFO] Grouping target links file by target page ID"
-  time pigz -dc links.sorted_by_target_id.txt.gz \
+  pv links.sorted_by_target_id.txt.gz \
+    | gunzip \
     | awk -F '\t' '$2==last {printf "|%s",$1; next} NR>1 {print "";} {last=$2; printf "%s\t%s",$2,$1;} END{print "";}' \
     | gzip > links.grouped_by_target_id.txt.gz
 else
@@ -257,15 +270,15 @@ fi
 if [ ! -f sdow.sqlite ]; then
   echo
   echo "[INFO] Creating redirects table"
-  time pigz -dc redirects.with_ids.txt.gz | sqlite3 sdow.sqlite ".read $ROOT_DIR/../sql/createRedirectsTable.sql"
+  pv redirects.with_ids.txt.gz | gunzip | sqlite3 sdow.sqlite ".read $ROOT_DIR/../sql/createRedirectsTable.sql"
 
   echo
   echo "[INFO] Creating pages table"
-  time pigz -dc pages.pruned.txt.gz | sqlite3 sdow.sqlite ".read $ROOT_DIR/../sql/createPagesTable.sql"
+  pv pages.pruned.txt.gz | gunzip | sqlite3 sdow.sqlite ".read $ROOT_DIR/../sql/createPagesTable.sql"
 
   echo
   echo "[INFO] Creating links table"
-  time pigz -dc links.with_counts.txt.gz | sqlite3 sdow.sqlite ".read $ROOT_DIR/../sql/createLinksTable.sql"
+  pv links.with_counts.txt.gz | gunzip | sqlite3 sdow.sqlite ".read $ROOT_DIR/../sql/createLinksTable.sql"
 
   echo
   echo "[INFO] Compressing SQLite file"

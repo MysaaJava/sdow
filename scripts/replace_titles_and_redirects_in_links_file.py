@@ -10,7 +10,6 @@ from __future__ import print_function
 import io
 import sys
 import gzip
-from sets import Set
 
 # Validate inputs
 if len(sys.argv) < 4:
@@ -35,25 +34,28 @@ if not LINKS_FILE.endswith('.gz'):
   sys.exit()
 
 # Create a set of all page IDs and a dictionary of page titles to their corresponding IDs.
-ALL_PAGE_IDS = Set()
+ALL_PAGE_IDS = set()
 PAGE_TITLES_TO_IDS = {}
 for line in io.BufferedReader(gzip.open(PAGES_FILE, 'r')):
-  [page_id, page_title, _] = line.rstrip('\n').split('\t')
+  [page_id, page_title, _] = line.decode().rstrip('\n').split('\t')
   ALL_PAGE_IDS.add(page_id)
   PAGE_TITLES_TO_IDS[page_title] = page_id
 
 # Create a dictionary of page IDs to the target page ID to which they redirect.
 REDIRECTS = {}
 for line in io.BufferedReader(gzip.open(REDIRECTS_FILE, 'r')):
-  [source_page_id, target_page_id] = line.rstrip('\n').split('\t')
+  [source_page_id, target_page_id] = line.decode().rstrip('\n').split('\t')
   REDIRECTS[source_page_id] = target_page_id
 
 # Loop through each line in the links file, replacing titles with IDs, applying redirects, and
 # removing nonexistent pages, writing the result to stdout.
 for line in io.BufferedReader(gzip.open(LINKS_FILE, 'r')):
-  [source_page_id, target_page_title] = line.rstrip('\n').split('\t')
-
+  [source_page_id, target_page_title] = line.decode().rstrip('\n').split('\t')
+  
   source_page_exists = source_page_id in ALL_PAGE_IDS
+
+  #if (int(source_page_id) % 1000) == 0:
+  #  print(str(source_page_id) + "/" + str(page_id),file=sys.stderr)
 
   if source_page_exists:
     source_page_id = REDIRECTS.get(source_page_id, source_page_id)
