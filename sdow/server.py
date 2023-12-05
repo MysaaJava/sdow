@@ -7,7 +7,6 @@ from __future__ import print_function
 import os
 import time
 import logging
-import google.cloud.logging
 
 from flask_cors import CORS
 from database import Database
