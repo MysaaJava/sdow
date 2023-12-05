@@ -9,7 +9,6 @@ import time
 import logging
 import google.cloud.logging
 
-from sets import Set
 from flask_cors import CORS
 from database import Database
 from flask_compress import Compress
