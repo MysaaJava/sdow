@@ -12,8 +12,6 @@ import PageInputSuggestion from './PageInputSuggestion';
 
 import {AutosuggestWrapper} from './PageInput.styles';
 
-import {WIKIPEDIA_API_URL} from '../resources/constants';
-
 // Autosuggest component helpers.
 const getSuggestionValue = (suggestion) => suggestion.title;
 const renderSuggestion = (suggestion) => <PageInputSuggestion {...suggestion} />;
@@ -73,7 +71,7 @@ class PageInput extends React.Component {
     // TODO: add helper for making API requests to WikiMedia API
     axios({
       method: 'get',
-      url: WIKIPEDIA_API_URL,
+      url: process.env.WIKIPEDIA_API_URL,
       params: queryParams,
       headers: {
         'Api-User-Agent':

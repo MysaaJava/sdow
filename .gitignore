@@ -1,3 +1,6 @@
+# Generated databases
+scripts/dump/
+
 # Mock databases
 sdow/sdow.sqlite
 sdow/searches.sqlite

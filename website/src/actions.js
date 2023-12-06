@@ -2,8 +2,6 @@ import get from 'lodash/get';
 import axios from 'axios';
 import {replace} from 'connected-react-router';
 
-import {SDOW_API_URL} from './resources/constants';
-
 // Router location changed action from react-router-dom.
 export const ROUTER_LOCATION_CHANGED = '@@router/LOCATION_CHANGE';
 
@@ -89,7 +87,7 @@ export function fetchShortestPaths() {
     const startTimeInMilliseconds = Date.now();
 
     return axios({
-      url: `${SDOW_API_URL}/paths`,
+      url: '$#SDOW_API_URL#$' + '/paths',
       method: 'POST',
       data: {
         source: sourcePageTitle,

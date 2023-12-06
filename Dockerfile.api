@@ -1,0 +1,27 @@
+FROM debian:bookworm
+RUN apt update
+RUN apt -y upgrade
+RUN apt -y install npm
+
+# Installing the Python environnement
+RUN mkdir /sdow
+WORKDIR /sdow
+RUN python3 -m venv env/
+ENV VIRTUAL_ENV /sdow/env
+ENV PATH /sdow/env/bin:$PATH
+COPY requirements.txt /sdow/requirements.txt
+RUN pip install -r requirements.txt
+
+# Setting up the npm server
+COPY website/ /sdow/website
+WORKDIR /sdow/website
+RUN npm install
+RUN npm run build
+
+# Setting up the gunicorn server
+COPY sdow/ /sdow/sdow
+# Copy Version
+RUN sqlite3 sdow/searches.sqlite ".read sql/createSearchesTable.sql"
+
+WORKDIR /sdow/sdow
+#ENTRYPOINT gunicorn -b 0.0.0.0:80 server:app
