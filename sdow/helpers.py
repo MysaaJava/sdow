@@ -6,7 +6,7 @@ import logging
 import requests
 
 
-WIKIPEDIA_API_URL = 'https://en.wikipedia.org/w/api.php'
+WIKIPEDIA_API_URL = 'https://fr.wikipedia.org/w/api.php'
 
 
 def fetch_wikipedia_pages_info(page_ids, database):
@@ -61,7 +61,7 @@ def fetch_wikipedia_pages_info(page_ids, database):
       })
       raise error
 
-    for page_id, page in pages_result.iteritems():
+    for page_id, page in pages_result.items():
       page_id = int(page_id)
 
       if 'missing' in page:

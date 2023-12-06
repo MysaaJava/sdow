@@ -128,7 +128,7 @@ def shortest_paths_route():
   # Paths found
   else:
     # Get a list of all IDs
-    page_ids_set = Set()
+    page_ids_set = set()
     for path in paths:
       for page_id in path:
         page_ids_set.add(str(page_id))
