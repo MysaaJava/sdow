@@ -8,11 +8,11 @@ import os
 import time
 import logging
 
-from flask_cors import CORS
 from database import Database
 from flask_compress import Compress
 from flask import Flask, request, jsonify
 from helpers import InvalidRequest, fetch_wikipedia_pages_info
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 
 # Connect to the SDOW database.
@@ -22,12 +22,9 @@ database = Database(sdow_database='./sdow.sqlite', searches_database='./searches
 app = Flask(__name__)
 
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
+app.wsgi_app = ProxyFix(app.wsgi_app)
 
 prefix = os.environ.get('APP_PREFIX','/')
-print("Running SDOW API under prefix",prefix)
-
-# Add support for cross-origin requests.
-CORS(app)
 
 # Add gzip compression.
 Compress(app)
@@ -35,11 +32,8 @@ Compress(app)
 
 # Gunicorn entry point.
 def load_app(environment='dev'):
-  # Initialize GCP logging (production only).
-  if environment == 'prod':
-    print('[INFO] Starting app in production mode with remote logging enabled...')
-    logging_client = google.cloud.logging.Client()
-    logging_client.setup_logging()
+
+  app.logger.info("Running behind app prefix "+prefix)
 
   return app
 
