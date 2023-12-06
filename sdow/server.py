@@ -23,6 +23,9 @@ app = Flask(__name__)
 
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 
+prefix = os.environ.get('APP_PREFIX','/')
+print("Running SDOW API under prefix",prefix)
+
 # Add support for cross-origin requests.
 CORS(app)
 
@@ -73,7 +76,7 @@ def invalid_request_handler(error):
   return response
 
 
-@app.route('/ok', methods=['GET'])
+@app.route(prefix + '/ok', methods=['GET'])
 def ok_endpoint():
   '''Health check endpoint.'''
   return jsonify({
@@ -81,7 +84,7 @@ def ok_endpoint():
   })
 
 
-@app.route('/paths', methods=['POST'])
+@app.route(prefix + '/paths', methods=['POST'])
 def shortest_paths_route():
   """Endpoint which returns a list of shortest paths between two Wikipedia pages.
 

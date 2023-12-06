@@ -1,27 +1,22 @@
-FROM debian:bookworm
-RUN apt update
-RUN apt -y upgrade
-RUN apt -y install npm
+FROM keinos/sqlite3 AS sql-builder
 
-# Installing the Python environnement
-RUN mkdir /sdow
+# Creating the base databases
+COPY --chown=sqlite:sqlite ./sql /sql/
+RUN sqlite3 /sql/searches.sqlite ".read /sql/createSearchesTable.sql"
+RUN cat /dev/null | sqlite3 /sql/sdow.sqlite ".read /sql/createRedirectsTable.sql"
+RUN cat /dev/null | sqlite3 /sql/sdow.sqlite ".read /sql/createPagesTable.sql"
+RUN cat /dev/null | sqlite3 /sql/sdow.sqlite ".read /sql/createLinksTable.sql"
+
+FROM python:3.11
+
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install -r /tmp/requirements.txt
+
+COPY ./sdow/ /sdow/
 WORKDIR /sdow
-RUN python3 -m venv env/
-ENV VIRTUAL_ENV /sdow/env
-ENV PATH /sdow/env/bin:$PATH
-COPY requirements.txt /sdow/requirements.txt
-RUN pip install -r requirements.txt
 
-# Setting up the npm server
-COPY website/ /sdow/website
-WORKDIR /sdow/website
-RUN npm install
-RUN npm run build
+COPY --from=sql-builder /sql/searches.sqlite /sdow/searches.sqlite
+COPY --from=sql-builder /sql/sdow.sqlite /sdow/sdow.sqlite
 
-# Setting up the gunicorn server
-COPY sdow/ /sdow/sdow
-# Copy Version
-RUN sqlite3 sdow/searches.sqlite ".read sql/createSearchesTable.sql"
-
-WORKDIR /sdow/sdow
-#ENTRYPOINT gunicorn -b 0.0.0.0:80 server:app
+EXPOSE 80
+ENTRYPOINT gunicorn -b 0.0.0.0:80 server:app
