@@ -9,7 +9,8 @@ COPY website/src ./src
 COPY website/public ./public
 COPY website/firebase.json ./
 
-RUN npm run build
+ARG APP_PREFIX="http://localhost:5000/"
+RUN PUBLIC_URL="$APP_PREFIX" npm run build
 
 
 FROM nginx
