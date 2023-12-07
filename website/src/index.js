@@ -1,8 +1,9 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import {createRoot} from 'react-dom/client';
 import {Provider} from 'react-redux';
 import Loadable from 'react-loadable';
-import Particles from 'react-particles-js';
+import Particles, {initParticlesEngine} from "@tsparticles/react";
+import {loadFull} from "tsparticles";
 import {ThemeProvider} from 'styled-components';
 import {Route, Switch} from 'react-router-dom';
 import {ConnectedRouter} from 'connected-react-router';
@@ -35,38 +36,60 @@ const AsyncBlogPost = Loadable({
 // Create the Redux store.
 const store = configureStore();
 
-ReactDOM.render(
-  <ThemeProvider theme={theme}>
-    <React.Fragment>
-      <Particles
-        params={particlesConfig}
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          zIndex: -1,
-        }}
-      />
-      <Provider store={store}>
-        <ConnectedRouter history={history}>
-          <>
-            <Switch>
-              <Route path="/blog/:postId">
-                <AsyncBlogPost />
-              </Route>
-              <Route path="/blog">
-                <AsyncBlog />
-              </Route>
-              <Route path="/">
-                <Home />
-              </Route>
-            </Switch>
-          </>
-        </ConnectedRouter>
-      </Provider>
-    </React.Fragment>
-  </ThemeProvider>,
-  document.getElementById('root')
+const root = createRoot(document.getElementById('root'));
+
+function App() {
+    const [init, setInit] = React.useState(false);
+
+    React.useEffect(() => {
+        if (init) {
+            return;
+        }
+
+        initParticlesEngine(async (engine) => {
+            await loadFull(engine);
+        }).then(() => {
+            setInit(true);
+        });
+    }, [init]);
+  return (
+    <ThemeProvider theme={theme}>
+      <React.Fragment>
+        <Particles
+          options={particlesConfig}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            zIndex: -1,
+          }}
+        />
+        <Provider store={store}>
+          <ConnectedRouter history={history}>
+            <>
+              <Switch>
+                <Route path="/blog/:postId">
+                  <AsyncBlogPost />
+                </Route>
+                <Route path="/blog">
+                  <AsyncBlog />
+                </Route>
+                <Route path="/">
+                  <Home />
+                </Route>
+              </Switch>
+            </>
+          </ConnectedRouter>
+        </Provider>
+      </React.Fragment>
+    </ThemeProvider>
+  );
+}
+
+root.render(
+    <React.StrictMode>
+        <App />
+    </React.StrictMode>
 );
 
 registerServiceWorker();

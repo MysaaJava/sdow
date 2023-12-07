@@ -30,14 +30,14 @@ class PageInput extends React.Component {
     this.debouncedLoadSuggestions = debounce(this.loadSuggestions, 250);
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentDidUpdate(prevProps, prevState) {
     if (
       typeof this.placeholderTextInterval === 'undefined' ||
-      this.props.value !== nextProps.value
+      prevProps.value !== this.props.value
     ) {
       clearInterval(this.placeholderTextInterval);
 
-      if (nextProps.value === '') {
+      if (this.props.value === '') {
         this.placeholderTextInterval = setInterval(
           () => this.props.updateInputPlaceholderText(getRandomPageTitle()),
           5000

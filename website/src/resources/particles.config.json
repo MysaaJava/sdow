@@ -1,82 +1,68 @@
 {
-  "particles": {
-    "number": {
-      "value": 20,
-      "density": {
-        "enable": true,
-        "value_area": 1000
-      }
-    },
-    "color": {
-      "value": "#F7FFF7"
-    },
-    "shape": {
-      "type": ["circle"],
-      "stroke": {
-        "width": 0,
-        "color": "#000000"
-      },
-      "polygon": {
-        "nb_sides": 5
-      }
-    },
-    "opacity": {
-      "value": 0.4,
-      "anim": {
-        "enable": false
-      }
-    },
-    "size": {
-      "value": 5,
-      "random": true,
-      "anim": {
-        "enable": false
-      }
-    },
-    "line_linked": {
-      "enable": true,
-      "distance": 200,
-      "color": "#F7FFF7",
-      "opacity": 0.2,
-      "width": 3
-    },
-    "move": {
-      "enable": true,
-      "speed": 1,
-      "random": true,
-      "straight": false,
-      "out_mode": "bounce",
-      "bounce": false,
-      "attract": {
-        "enable": false
-      }
-    }
-  },
   "interactivity": {
-    "detect_on": "window",
     "events": {
-      "onhover": {
+      "onClick": {
         "enable": true,
-        "mode": "bubble"
+        "mode": "push"
       },
-      "onclick": {
-        "enable": false
-      },
-      "onresize": {
+      "onHover": {
         "enable": true,
-        "density_auto": true,
-        "density_area": 40000000
-      }
+        "mode": "repulse"
+      },
+      "resize": true
     },
     "modes": {
-      "bubble": {
+      "push": {
+        "quantity": 4
+      },
+      "repulse": {
         "distance": 200,
-        "size": 4,
-        "duration": 2,
-        "opacity": 0.8,
-        "speed": 1
+        "duration": 0.4
       }
     }
   },
-  "retina_detect": true
+  "particles": {
+    "color": {
+      "value": "#ffffff"
+    },
+    "links": {
+      "color": "#ffffff",
+      "distance": 150,
+      "enable": true,
+      "opacity": 0.5,
+      "width": 1
+    },
+    "collisions": {
+      "enable": true
+    },
+    "move": {
+      "direction": "none",
+      "enable": true,
+      "outModes": {
+        "default": "bounce"
+      },
+      "random": false,
+      "speed": {
+        "min": 0.5,
+        "max": 2
+      },
+      "straight": false
+    },
+    "number": {
+      "density": {
+        "enable": true
+      },
+      "value": 80
+    },
+    "opacity": {
+      "value": 0.5
+    },
+    "shape": {
+      "type": "circle"
+    },
+    "size": {
+      "random": true,
+      "value": 5
+    }
+  }
 }
