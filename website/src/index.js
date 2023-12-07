@@ -5,7 +5,7 @@ import Loadable from 'react-loadable';
 import Particles, {initParticlesEngine} from "@tsparticles/react";
 import {loadFull} from "tsparticles";
 import {ThemeProvider} from 'styled-components';
-import {Route, Switch} from 'react-router-dom';
+import {Route, Routes, BrowserRouter} from 'react-router-dom';
 import {ConnectedRouter} from 'connected-react-router';
 import configureStore, {history} from './configureStore.js';
 
@@ -65,21 +65,15 @@ function App() {
           }}
         />
         <Provider store={store}>
-          <ConnectedRouter history={history}>
-            <>
-              <Switch>
-                <Route path="/blog/:postId">
-                  <AsyncBlogPost />
-                </Route>
-                <Route path="/blog">
-                  <AsyncBlog />
-                </Route>
-                <Route path="/">
-                  <Home />
-                </Route>
-              </Switch>
-            </>
-          </ConnectedRouter>
+          <BrowserRouter history={history}>
+            <div>
+              <Routes>
+                <Route path="/blog/:postId" element={<AsyncBlogPost/>}/>
+                <Route path="/blog" element={<AsyncBlog />} />
+                <Route index path="/" element={<Home />}/>
+              </Routes>
+            </div>
+          </BrowserRouter>
         </Provider>
       </React.Fragment>
     </ThemeProvider>

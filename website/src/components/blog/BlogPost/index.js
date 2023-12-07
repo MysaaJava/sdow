@@ -1,6 +1,6 @@
 import React from 'react';
 import Loadable from 'react-loadable';
-import {useParams, Redirect} from 'react-router-dom';
+import {useParams, Navigate} from 'react-router-dom';
 
 import Logo from '../../common/Logo';
 
@@ -14,7 +14,7 @@ const getBlogPostContent = (postId) => {
     case 'search-results-analysis':
       return <AsyncSearchResultsAnalysisPost />;
     default:
-      return <Redirect to="/blog" />;
+      return <Navigate to="/blog" />;
   }
 };
 

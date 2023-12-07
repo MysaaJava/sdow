@@ -13,10 +13,10 @@
     },
     "modes": {
       "push": {
-        "quantity": 4
+        "quantity": 2
       },
       "repulse": {
-        "distance": 200,
+        "distance": 90,
         "duration": 0.4
       }
     }
