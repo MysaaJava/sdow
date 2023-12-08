@@ -56,13 +56,13 @@ const StyledLinkWrapper = styled.a`
 const StyledLink = ({children, ...props}) => {
   // Change the word break behavior for long article names with no space (to avoid them trailing
   // off the page).
-  let wordBreak;
+  let wordbreak;
   if (children.indexOf(' ') === -1 && children.length >= 50) {
-    wordBreak = 'break-all';
+    wordbreak = 'break-all';
   }
 
   return (
-    <StyledLinkWrapper wordBreak={wordBreak} {...props}>
+    <StyledLinkWrapper wordbreak={wordbreak} {...props}>
       {children}
     </StyledLinkWrapper>
   );

@@ -269,7 +269,7 @@ class Graph extends Component {
       .text((d) => d.title);
 
     // Open Wikipedia page when node is double clicked.
-    this.nodes.on('click', (d) => {
+    this.nodes.on('click', (e,d) => {
       window.open(getWikipediaPageUrl(d.id), '_blank');
     });
 

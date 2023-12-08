@@ -15,9 +15,9 @@ class Loading extends Component {
     };
 
     setInterval(() => {
-      this.setState({
+      this.state = {
         currentFact: getRandomWikipediaFact(),
-      });
+      };
     }, 7000);
   }
 
