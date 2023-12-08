@@ -21,14 +21,14 @@ PAGES_FILE = sys.argv[2]
 redirectsf = open(REDIRECTS_FILE,'r')
 # Create a dictionary of redirects.
 REDIRECTS = {}
-for line in redirects.readlines():
+for line in redirectsf:
   [source_page_id, _] = line.rstrip('\n').split('\t')
   REDIRECTS[source_page_id] = True
 
 pagesf = open(PAGES_FILE,'r')
 # Loop through the pages file, ignoring pages which are marked as redirects but which do not have a
 # corresponding redirect in the redirects dictionary, printing the remaining pages to stdout.
-for line in pages.readlines():
+for line in pagesf:
   [page_id, page_title, is_redirect] = line.rstrip('\n').split('\t')
 
   if is_redirect == '0' or page_id in REDIRECTS:

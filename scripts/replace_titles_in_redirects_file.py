@@ -22,7 +22,7 @@ pagesf = open(PAGES_FILE,'r')
 # Create a set of all page IDs and a dictionary of page titles to their corresponding IDs.
 ALL_PAGE_IDS = set()
 PAGE_TITLES_TO_IDS = {}
-for line in pagesf.readlines():
+for line in pagesf:
   [page_id, page_title, _] = line.rstrip('\n').split('\t')
   ALL_PAGE_IDS.add(page_id)
   PAGE_TITLES_TO_IDS[page_title] = page_id
@@ -32,7 +32,7 @@ redirectsf = open(REDIRECTS_FILE)
 # Create a dictionary of redirects, replace page titles in the redirects file with their
 # corresponding IDs and ignoring pages which do not exist.
 REDIRECTS = {}
-for line in redirectsf.readlines():
+for line in redirectsf:
   [source_page_id, target_page_title] = line.rstrip('\n').split('\t')
 
   source_page_exists = source_page_id in ALL_PAGE_IDS

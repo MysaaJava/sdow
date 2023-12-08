@@ -22,12 +22,12 @@ INCOMING_LINKS_FILE = sys.argv[2]
 olf = open(OUTGOING_LINKS_FILE,'r')
 # Create a dictionary of page IDs to their incoming and outgoing links.
 LINKS = defaultdict(lambda: defaultdict(str))
-for line in olf.readline():
+for line in olf:
   [source_page_id, target_page_ids] = line.rstrip('\n').split('\t')
   LINKS[source_page_id]['outgoing'] = target_page_ids
 
 ilf = open(INCOMING_LINKS_FILE,'r')
-for line in ilf.readlines():
+for line in ilf:
   decoded = line.rstrip('\n').split('\t')
   if len(decoded)<2:
     print("One line is illegal :/",file=sys.stderr)
