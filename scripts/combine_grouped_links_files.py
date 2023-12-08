@@ -6,9 +6,7 @@ Output is written to stdout.
 
 from __future__ import print_function
 
-import io
 import sys
-import gzip
 from collections import defaultdict
 from tqdm import tqdm
 
@@ -21,15 +19,14 @@ if len(sys.argv) < 2:
 OUTGOING_LINKS_FILE = sys.argv[1]
 INCOMING_LINKS_FILE = sys.argv[2]
 
-olf = open(OUTGOING_LINKS_FILE)
-ilf = open(INCOMING_LINKS_FILE)
-
+olf = open(OUTGOING_LINKS_FILE,'r')
 # Create a dictionary of page IDs to their incoming and outgoing links.
 LINKS = defaultdict(lambda: defaultdict(str))
 for line in olf.readline():
   [source_page_id, target_page_ids] = line.decode().rstrip('\n').split('\t')
   LINKS[source_page_id]['outgoing'] = target_page_ids
 
+ilf = open(INCOMING_LINKS_FILE,'r')
 for line in ilf.readlines():
   decoded = line.decode().rstrip('\n').split('\t')
   if len(decoded)<2:

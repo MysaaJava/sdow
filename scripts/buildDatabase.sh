@@ -6,7 +6,7 @@ set -euo pipefail
 # UNIX commands.
 export LC_ALL=C
 
-HD=$(tput bold)$(tput setaf 219)
+HD=$(tput bold)$(tput setaf 5)
 HDZ=$(tput sgr0)
 
 WLANG=fr

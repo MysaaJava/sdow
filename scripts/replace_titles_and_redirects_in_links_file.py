@@ -7,9 +7,7 @@ Output is written to stdout.
 
 from __future__ import print_function
 
-import io
 import sys
-import gzip
 
 # Validate inputs
 if len(sys.argv) < 4:
@@ -21,10 +19,7 @@ PAGES_FILE = sys.argv[1]
 REDIRECTS_FILE = sys.argv[2]
 LINKS_FILE = sys.argv[3]
 
-pagesf = open(PAGES_FILE)
-redirectsf = open(REDIRECTS_FILE)
-linksf = open(LINKS_FILE)
-
+pagesf = open(PAGES_FILE,'r')
 # Create a set of all page IDs and a dictionary of page titles to their corresponding IDs.
 ALL_PAGE_IDS = set()
 PAGE_TITLES_TO_IDS = {}
@@ -33,12 +28,14 @@ for line in pagesf.readlines():
   ALL_PAGE_IDS.add(page_id)
   PAGE_TITLES_TO_IDS[page_title] = page_id
 
+redirectsf = open(REDIRECTS_FILE,'r')
 # Create a dictionary of page IDs to the target page ID to which they redirect.
 REDIRECTS = {}
 for line in redirectsf.readlines():
   [source_page_id, target_page_id] = line.decode().rstrip('\n').split('\t')
   REDIRECTS[source_page_id] = target_page_id
 
+linksf = open(LINKS_FILE,'r')
 # Loop through each line in the links file, replacing titles with IDs, applying redirects, and
 # removing nonexistent pages, writing the result to stdout.
 for line in linksf.readlines():

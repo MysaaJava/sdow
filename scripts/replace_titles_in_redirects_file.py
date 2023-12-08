@@ -6,9 +6,7 @@ Output is written to stdout.
 
 from __future__ import print_function
 
-import io
 import sys
-import gzip
 from tqdm import tqdm
 
 # Validate input arguments.
@@ -20,9 +18,7 @@ if len(sys.argv) < 3:
 PAGES_FILE = sys.argv[1]
 REDIRECTS_FILE = sys.argv[2]
 
-pagesf = open(PAGES_FILE)
-redirectsf = open(REDIRECTS_FILE)
-
+pagesf = open(PAGES_FILE,'r')
 # Create a set of all page IDs and a dictionary of page titles to their corresponding IDs.
 ALL_PAGE_IDS = set()
 PAGE_TITLES_TO_IDS = {}
@@ -31,6 +27,8 @@ for line in pagesf.readlines():
   ALL_PAGE_IDS.add(page_id)
   PAGE_TITLES_TO_IDS[page_title] = page_id
 
+
+redirectsf = open(REDIRECTS_FILE)
 # Create a dictionary of redirects, replace page titles in the redirects file with their
 # corresponding IDs and ignoring pages which do not exist.
 REDIRECTS = {}
