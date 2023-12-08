@@ -102,7 +102,7 @@ if [ ! -f redirects.txt.gz ]; then
     | egrep "^[0-9]+,0," \
     | sed -e $"s/,0,'/\t/g" \
     | sed -e "s/','.*//g" \
-    | pigz --fast > redirects.txt.gz.tmp
+    | gzip --fast > redirects.txt.gz.tmp
   mv redirects.txt.gz.tmp redirects.txt.gz
 else
   echo "[WARN] Already trimmed redirects file"
@@ -127,7 +127,7 @@ if [ ! -f pages.txt.gz ]; then
     | egrep "^[0-9]+,0," \
     | sed -e $"s/,0,'/\t/" \
     | sed -e $"s/',[^,]*,\([01]\).*/\t\1/" \
-    | pigz --fast > pages.txt.gz.tmp
+    | gzip --fast > pages.txt.gz.tmp
   mv pages.txt.gz.tmp pages.txt.gz
 else
   echo "[WARN] Already trimmed pages file"
@@ -153,7 +153,7 @@ if [ ! -f links.txt.gz ]; then
     | sed 's/,0,[0-9]\+$//' \
     | sed "s/'$//" \
     | sed -e $"s/,0,'/\t/g" \
-    | pigz --fast > links.txt.gz.tmp
+    | gzip --fast > links.txt.gz.tmp
   mv links.txt.gz.tmp links.txt.gz
 else
   echo "[WARN] Already trimmed links file"
@@ -168,7 +168,7 @@ if [ ! -f redirects.with_ids.txt.gz ]; then
   echo "[INFO] Replacing titles in redirects file"
   time python "$ROOT_DIR/replace_titles_in_redirects_file.py" pages.txt.gz redirects.txt.gz \
     | sort -S 100% -t $'\t' -k 1n,1n \
-    | pigz --fast > redirects.with_ids.txt.gz.tmp
+    | gzip --fast > redirects.with_ids.txt.gz.tmp
   mv redirects.with_ids.txt.gz.tmp redirects.with_ids.txt.gz
 else
   echo "[WARN] Already replaced titles in redirects file"
@@ -178,7 +178,7 @@ if [ ! -f links.with_ids.txt.gz ]; then
   echo
   echo "[INFO] Replacing titles and redirects in links file"
   time python "$ROOT_DIR/replace_titles_and_redirects_in_links_file.py" pages.txt.gz redirects.with_ids.txt.gz links.txt.gz \
-    | pigz --fast > links.with_ids.txt.gz.tmp
+    | gzip --fast > links.with_ids.txt.gz.tmp
   mv links.with_ids.txt.gz.tmp links.with_ids.txt.gz
 else
   echo "[WARN] Already replaced titles and redirects in links file"
@@ -188,7 +188,7 @@ if [ ! -f pages.pruned.txt.gz ]; then
   echo
   echo "[INFO] Pruning pages which are marked as redirects but with no redirect"
   time python "$ROOT_DIR/prune_pages_file.py" pages.txt.gz redirects.with_ids.txt.gz \
-    | pigz --fast > pages.pruned.txt.gz
+    | gzip --fast > pages.pruned.txt.gz
 else
   echo "[WARN] Already pruned pages which are marked as redirects but with no redirect"
 fi
@@ -203,7 +203,7 @@ if [ ! -f links.sorted_by_source_id.txt.gz ]; then
     | gunzip \
     | sort -S 80% -t $'\t' -k 1n,1n \
     | uniq \
-    | pigz --fast > links.sorted_by_source_id.txt.gz.tmp
+    | gzip --fast > links.sorted_by_source_id.txt.gz.tmp
   mv links.sorted_by_source_id.txt.gz.tmp links.sorted_by_source_id.txt.gz
 else
   echo "[WARN] Already sorted links file by source page ID"
@@ -216,7 +216,7 @@ if [ ! -f links.sorted_by_target_id.txt.gz ]; then
     | gunzip \
     | sort -S 80% -t $'\t' -k 2n,2n \
     | uniq \
-    | pigz --fast > links.sorted_by_target_id.txt.gz.tmp
+    | gzip --fast > links.sorted_by_target_id.txt.gz.tmp
   mv links.sorted_by_target_id.txt.gz.tmp links.sorted_by_target_id.txt.gz
 else
   echo "[WARN] Already sorted links file by target page ID"
@@ -232,7 +232,7 @@ if [ ! -f links.grouped_by_source_id.txt.gz ]; then
   pv links.sorted_by_source_id.txt.gz \
    | gunzip \
    | awk -F '\t' '$1==last {printf "|%s",$2; next} NR>1 {print "";} {last=$1; printf "%s\t%s",$1,$2;} END{print "";}' \
-   | pigz --fast > links.grouped_by_source_id.txt.gz.tmp
+   | gzip --fast > links.grouped_by_source_id.txt.gz.tmp
   mv links.grouped_by_source_id.txt.gz.tmp links.grouped_by_source_id.txt.gz
 else
   echo "[WARN] Already grouped source links file by source page ID"
@@ -257,7 +257,7 @@ if [ ! -f links.with_counts.txt.gz ]; then
   echo
   echo "[INFO] Combining grouped links files"
   time python "$ROOT_DIR/combine_grouped_links_files.py" links.grouped_by_source_id.txt.gz links.grouped_by_target_id.txt.gz \
-    | pigz --fast > links.with_counts.txt.gz.tmp
+    | gzip --fast > links.with_counts.txt.gz.tmp
   mv links.with_counts.txt.gz.tmp links.with_counts.txt.gz
 else
   echo "[WARN] Already combined grouped links files"
@@ -282,7 +282,7 @@ if [ ! -f sdow.sqlite ]; then
 
   echo
   echo "[INFO] Compressing SQLite file"
-  time pigz --best --keep sdow.sqlite
+  time gzip --best --keep sdow.sqlite
 else
   echo "[WARN] Already created SQLite database"
 fi
