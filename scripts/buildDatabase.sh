@@ -163,6 +163,7 @@ else
 fi
 
 # Creating the named pipes for python programs
+rm -f pipe1 pipe2 pipe3
 mkfifo pipe1
 mkfifo pipe2
 mkfifo pipe3
@@ -173,7 +174,7 @@ mkfifo pipe3
 if [ ! -f redirects.with_ids.txt.gz ]; then
   echo
   echo "$HD[8/19]$HDZ Replacing titles in redirects file"
-    (cat pages.txt.gz | gunzip > pipe1 ; cat redirects.txt.gz | gunzip > pipe2) \
+    (pv pages.txt.gz | gunzip > pipe1 ; pv redirects.txt.gz | gunzip > pipe2) \
     | python "$ROOT_DIR/replace_titles_in_redirects_file.py" pipe1 pipe2 \
     | sort -S 100% -t $'\t' -k 1n,1n \
     | gzip --fast > redirects.with_ids.txt.gz.tmp
@@ -185,7 +186,7 @@ fi
 if [ ! -f links.with_ids.txt.gz ]; then
   echo
   echo "$HD[9/19]$HDZ Replacing titles and redirects in links file"
-  (cat pages.txt.gz | gunzip > pipe1 ; cat redirects.with_ids.txt.gz | gunzip > pipe2; cat links.txt.gz | gunzip > pipe3) \
+  (pv pages.txt.gz | gunzip > pipe1 ; pv redirects.with_ids.txt.gz | gunzip > pipe2; pv links.txt.gz | gunzip > pipe3) \
     | python "$ROOT_DIR/replace_titles_and_redirects_in_links_file.py" pipe1 pipe2 pipe3 \
     | gzip --fast > links.with_ids.txt.gz.tmp
   mv links.with_ids.txt.gz.tmp links.with_ids.txt.gz
@@ -196,7 +197,7 @@ fi
 if [ ! -f pages.pruned.txt.gz ]; then
   echo
   echo "$HD[10/19]$HDZ Pruning pages which are marked as redirects but with no redirect"
-  (cat redirects.with_ids.txt.gz | gunzip > pipe1 ; cat pages.txt.gz | gunzip > pipe2) \
+  (pv redirects.with_ids.txt.gz | gunzip > pipe1 ; pv pages.txt.gz | gunzip > pipe2) \
     | python "$ROOT_DIR/prune_pages_file.py" pipe1 pipe2 \
     | gzip --fast > pages.pruned.txt.gz
 else
@@ -266,7 +267,7 @@ fi
 if [ ! -f links.with_counts.txt.gz ]; then
   echo
   echo "$HD[15/19]$HDZ Combining grouped links files"
-  (cat links.grouped_by_source_id.txt.gz | gunzip > pipe1 ; cat links.grouped_by_target_id.txt.gz | gunzip > pipe2) \
+  (pv links.grouped_by_source_id.txt.gz | gunzip > pipe1 ; pv links.grouped_by_target_id.txt.gz | gunzip > pipe2) \
     | python "$ROOT_DIR/combine_grouped_links_files.py" pipe1 pipe2 \
     | gzip --fast > links.with_counts.txt.gz.tmp
   mv links.with_counts.txt.gz.tmp links.with_counts.txt.gz
