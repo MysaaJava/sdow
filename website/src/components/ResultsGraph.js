@@ -36,7 +36,7 @@ class Graph extends Component {
     this.ticksPerRender = null;
 
     this.color = d3.scaleOrdinal(d3.schemeCategory10);
-    this.zoom = d3.zoom().on('zoom', () => this.zoomed());
+    this.zoom = d3.zoom().on('zoom', (e) => this.zoomed(e));
 
     this.debouncedResetGraph = debounce(this.resetGraph.bind(this, false), 350);
   }
@@ -131,16 +131,17 @@ class Graph extends Component {
   }
 
   /* Updates the zoom level of the graph when a zoom event occurs. */
-  zoomed() {
+  zoomed(e) {
+    console.log(e);
     this.graph.attr(
       `transform`,
-      `translate(${d3.event.transform.x}, ${d3.event.transform.y}) scale(${d3.event.transform.k})`
+      `translate(${e.transform.x}, ${e.transform.y}) scale(${e.transform.k})`
     );
   }
 
   /* Drag started event. */
-  dragstarted(d) {
-    if (!d3.event.active) {
+  dragstarted(e,d) {
+    if (!e.active) {
       this.simulation.alphaTarget(0.3).restart();
       requestAnimationFrame(() => this.updateElementLocations());
     }
@@ -149,14 +150,14 @@ class Graph extends Component {
   }
 
   /* Dragged event. */
-  dragged(d) {
-    d.fx = d3.event.x;
-    d.fy = d3.event.y;
+  dragged(e,d) {
+    d.fx = e.x;
+    d.fy = e.y;
   }
 
   /* Drag ended event. */
-  dragended(d) {
-    if (!d3.event.active) {
+  dragended(e,d) {
+    if (!e.active) {
       this.simulation.alphaTarget(0);
     }
     d.fx = null;

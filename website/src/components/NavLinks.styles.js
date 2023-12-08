@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, {css} from 'styled-components';
 import {Link} from 'react-router-dom';
 
 export const Wrapper = styled.div`
@@ -21,7 +21,7 @@ export const Wrapper = styled.div`
   }
 `;
 
-export const TextLink = styled.a`
+export const textLinkStyle = css`
   padding: 0 12px;
   text-decoration: none;
   font-size: 24px;
@@ -61,4 +61,5 @@ export const TextLink = styled.a`
   }
 `;
 
-export const TextLinkInternal = TextLink.withComponent(Link);
+export const TextLink = styled.a(textLinkStyle)
+export const TextLinkInternal = styled(Link)(textLinkStyle);

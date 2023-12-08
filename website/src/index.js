@@ -6,7 +6,6 @@ import Particles, {initParticlesEngine} from "@tsparticles/react";
 import {loadFull} from "tsparticles";
 import {ThemeProvider} from 'styled-components';
 import {Route, Routes, BrowserRouter} from 'react-router-dom';
-import {ConnectedRouter} from 'connected-react-router';
 import configureStore, {history} from './configureStore.js';
 
 import registerServiceWorker from './registerServiceWorker';
