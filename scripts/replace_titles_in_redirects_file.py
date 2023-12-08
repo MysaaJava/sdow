@@ -23,7 +23,7 @@ pagesf = open(PAGES_FILE,'r')
 ALL_PAGE_IDS = set()
 PAGE_TITLES_TO_IDS = {}
 for line in pagesf.readlines():
-  [page_id, page_title, _] = line.decode().rstrip('\n').split('\t')
+  [page_id, page_title, _] = line.rstrip('\n').split('\t')
   ALL_PAGE_IDS.add(page_id)
   PAGE_TITLES_TO_IDS[page_title] = page_id
 
@@ -33,7 +33,7 @@ redirectsf = open(REDIRECTS_FILE)
 # corresponding IDs and ignoring pages which do not exist.
 REDIRECTS = {}
 for line in redirectsf.readlines():
-  [source_page_id, target_page_title] = line.decode().rstrip('\n').split('\t')
+  [source_page_id, target_page_title] = line.rstrip('\n').split('\t')
 
   source_page_exists = source_page_id in ALL_PAGE_IDS
   target_page_id = PAGE_TITLES_TO_IDS.get(target_page_title)
