@@ -54,7 +54,7 @@ function download_file() {
       echo "[INFO] Downloading $1 file via torrent"
       time aria2c --summary-interval=0 --console-log-level=warn --seed-time=0 \
         "$TORRENT_URL/$2.torrent"
-    else
+    else  
       echo "[INFO] Downloading $1 file via wget"
       time wget --progress=dot:giga "$DOWNLOAD_URL/$2"
     fi
@@ -159,6 +159,10 @@ else
   echo "[WARN] Already trimmed links file"
 fi
 
+# Creating the named pipes for python programs
+mkfifo pipe1
+mkfifo pipe2
+mkfifo pipe3
 
 ###########################################
 #  REPLACE TITLES AND REDIRECTS IN FILES  #
@@ -166,7 +170,8 @@ fi
 if [ ! -f redirects.with_ids.txt.gz ]; then
   echo
   echo "[INFO] Replacing titles in redirects file"
-  time python "$ROOT_DIR/replace_titles_in_redirects_file.py" pages.txt.gz redirects.txt.gz \
+    (cat pages.txt.gz | gunzip > pipe1 ; cat redirects.txt.gz | gunzip > pipe2) \
+    | python "$ROOT_DIR/replace_titles_in_redirects_file.py" pipe1 pipe2 \
     | sort -S 100% -t $'\t' -k 1n,1n \
     | gzip --fast > redirects.with_ids.txt.gz.tmp
   mv redirects.with_ids.txt.gz.tmp redirects.with_ids.txt.gz
@@ -177,7 +182,8 @@ fi
 if [ ! -f links.with_ids.txt.gz ]; then
   echo
   echo "[INFO] Replacing titles and redirects in links file"
-  time python "$ROOT_DIR/replace_titles_and_redirects_in_links_file.py" pages.txt.gz redirects.with_ids.txt.gz links.txt.gz \
+  (cat pages.txt.gz | gunzip > pipe1 ; cat redirects.with_ids.txt.gz | gunzip > pipe2; cat links.txt.gz | gunzip > pipe3) \
+    | python "$ROOT_DIR/replace_titles_and_redirects_in_links_file.py" pipe1 pipe2 pipe3 \
     | gzip --fast > links.with_ids.txt.gz.tmp
   mv links.with_ids.txt.gz.tmp links.with_ids.txt.gz
 else
@@ -187,7 +193,8 @@ fi
 if [ ! -f pages.pruned.txt.gz ]; then
   echo
   echo "[INFO] Pruning pages which are marked as redirects but with no redirect"
-  time python "$ROOT_DIR/prune_pages_file.py" pages.txt.gz redirects.with_ids.txt.gz \
+  (cat redirects.with_ids.txt.gz | gunzip > pipe1 ; cat pages.txt.gz | gunzip > pipe2) \
+    | python "$ROOT_DIR/prune_pages_file.py" pipe1 pipe2 \
     | gzip --fast > pages.pruned.txt.gz
 else
   echo "[WARN] Already pruned pages which are marked as redirects but with no redirect"
@@ -256,7 +263,8 @@ fi
 if [ ! -f links.with_counts.txt.gz ]; then
   echo
   echo "[INFO] Combining grouped links files"
-  time python "$ROOT_DIR/combine_grouped_links_files.py" links.grouped_by_source_id.txt.gz links.grouped_by_target_id.txt.gz \
+  (cat links.grouped_by_source_id.txt.gz | gunzip > pipe1 ; cat links.grouped_by_target_id.txt.gz | gunzip > pipe2) \
+    | python "$ROOT_DIR/combine_grouped_links_files.py" pipe1 pipe2 \
     | gzip --fast > links.with_counts.txt.gz.tmp
   mv links.with_counts.txt.gz.tmp links.with_counts.txt.gz
 else

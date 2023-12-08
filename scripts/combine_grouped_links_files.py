@@ -10,6 +10,7 @@ import io
 import sys
 import gzip
 from collections import defaultdict
+from tqdm import tqdm
 
 # Validate input arguments.
 if len(sys.argv) < 2:
@@ -20,21 +21,16 @@ if len(sys.argv) < 2:
 OUTGOING_LINKS_FILE = sys.argv[1]
 INCOMING_LINKS_FILE = sys.argv[2]
 
-if not OUTGOING_LINKS_FILE.endswith('.gz'):
-  print('[ERROR] Outgoing links file must be gzipped.')
-  sys.exit()
-
-if not INCOMING_LINKS_FILE.endswith('.gz'):
-  print('[ERROR] Incoming links file must be gzipped.')
-  sys.exit()
+olf = open(OUTGOING_LINKS_FILE)
+ilf = open(INCOMING_LINKS_FILE)
 
 # Create a dictionary of page IDs to their incoming and outgoing links.
 LINKS = defaultdict(lambda: defaultdict(str))
-for line in io.BufferedReader(gzip.open(OUTGOING_LINKS_FILE, 'r')):
+for line in olf.readline():
   [source_page_id, target_page_ids] = line.decode().rstrip('\n').split('\t')
   LINKS[source_page_id]['outgoing'] = target_page_ids
 
-for line in io.BufferedReader(gzip.open(INCOMING_LINKS_FILE, 'r')):
+for line in ilf.readlines():
   decoded = line.decode().rstrip('\n').split('\t')
   if len(decoded)<2:
     print("One line is illegal :/",file=sys.stderr)
@@ -44,7 +40,7 @@ for line in io.BufferedReader(gzip.open(INCOMING_LINKS_FILE, 'r')):
 
 # For each page in the links dictionary, print out its incoming and outgoing links as well as their
 # counts.
-for page_id, links in LINKS.items():
+for page_id, links in tqdm(LINKS.items(),total=len(LINKS)):
   outgoing_links = links.get('outgoing', '')
   outgoing_links_count = 0 if (outgoing_links == '') else len(
       outgoing_links.split('|'))
