@@ -87,7 +87,7 @@ export function fetchShortestPaths() {
     const startTimeInMilliseconds = Date.now();
 
     return axios({
-      url: 'https://api.sixdegreesofwikipedia.com/paths',
+      url: '$#SDOW_API_URL#$'
       method: 'POST',
       data: {
         source: sourcePageTitle,
