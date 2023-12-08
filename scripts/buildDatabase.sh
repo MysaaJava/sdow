@@ -6,6 +6,9 @@ set -euo pipefail
 # UNIX commands.
 export LC_ALL=C
 
+HD=$(tput bold)$(tput setaf 219)
+HDZ=$(tput sgr0)
+
 WLANG=fr
 
 # By default, the latest Wikipedia dump will be downloaded. If a download date in the format
@@ -38,9 +41,9 @@ mkdir -p $OUT_DIR
 pushd $OUT_DIR > /dev/null
 
 
-echo "[INFO] Download date: $DOWNLOAD_DATE"
-echo "[INFO] Download URL: $DOWNLOAD_URL"
-echo "[INFO] Output directory: $OUT_DIR"
+echo "Download date: $DOWNLOAD_DATE"
+echo "Download URL: $DOWNLOAD_URL"
+echo "Output directory: $OUT_DIR"
 echo
 
 ##############################
@@ -51,41 +54,41 @@ function download_file() {
   if [ ! -f $2 ]; then
     echo
     if [ $1 != sha1sums ] && command -v aria2c > /dev/null; then
-      echo "[INFO] Downloading $1 file via torrent"
+      echo "$HD[$3/19]$HDZ Downloading $1 file via torrent"
       time aria2c --summary-interval=0 --console-log-level=warn --seed-time=0 \
         "$TORRENT_URL/$2.torrent"
     else  
-      echo "[INFO] Downloading $1 file via wget"
+      echo "$HD[$3/19]$HDZ Downloading $1 file via wget"
       time wget --progress=dot:giga "$DOWNLOAD_URL/$2"
     fi
 
     if [ $1 != sha1sums ]; then
       echo
-      echo "[INFO] Verifying SHA-1 hash for $1 file"
+      echo "Verifying SHA-1 hash for $1 file"
       time grep "$2" "$SHA1SUM_FILENAME" | sha1sum -c
       if [ $? -ne 0 ]; then
         echo
-        echo "[ERROR] Downloaded $1 file has incorrect SHA-1 hash"
+        echo "$HD[ERROR]$HDZ Downloaded $1 file has incorrect SHA-1 hash"
         rm $2
         exit 1
       fi
     fi
   else
-    echo "[WARN] Already downloaded $1 file"
+    echo "$HD[$3/19]$HDZ Already downloaded $1 file"
   fi
 }
 
-download_file "sha1sums" $SHA1SUM_FILENAME
-download_file "redirects" $REDIRECTS_FILENAME
-download_file "pages" $PAGES_FILENAME
-download_file "links" $LINKS_FILENAME
+download_file "sha1sums" $SHA1SUM_FILENAME 1
+download_file "redirects" $REDIRECTS_FILENAME 2
+download_file "pages" $PAGES_FILENAME 3
+download_file "links" $LINKS_FILENAME 4
 
 ##########################
 #  TRIM WIKIPEDIA DUMPS  #
 ##########################
 if [ ! -f redirects.txt.gz ]; then
   echo
-  echo "[INFO] Trimming redirects file"
+  echo "$HD[5/19]$HDZ Trimming redirects file"
 
   # Unzip
   # Remove all lines that don't start with INSERT INTO...
@@ -105,12 +108,12 @@ if [ ! -f redirects.txt.gz ]; then
     | gzip --fast > redirects.txt.gz.tmp
   mv redirects.txt.gz.tmp redirects.txt.gz
 else
-  echo "[WARN] Already trimmed redirects file"
+  echo "$HD[5/19]$HDZ Already trimmed redirects file"
 fi
 
 if [ ! -f pages.txt.gz ]; then
   echo
-  echo "[INFO] Trimming pages file"
+  echo "$HD[6/19]$HDZ Trimming pages file"
 
   # Unzip
   # Remove all lines that don't start with INSERT INTO...
@@ -130,12 +133,12 @@ if [ ! -f pages.txt.gz ]; then
     | gzip --fast > pages.txt.gz.tmp
   mv pages.txt.gz.tmp pages.txt.gz
 else
-  echo "[WARN] Already trimmed pages file"
+  echo "$HD[6/19]$HDZ Already trimmed pages file"
 fi
 
 if [ ! -f links.txt.gz ]; then
   echo
-  echo "[INFO] Trimming links file"
+  echo "$HD[7/19]$HDZ Trimming links file"
 
   # Unzip
   # Remove all lines that don't start with INSERT INTO...
@@ -156,7 +159,7 @@ if [ ! -f links.txt.gz ]; then
     | gzip --fast > links.txt.gz.tmp
   mv links.txt.gz.tmp links.txt.gz
 else
-  echo "[WARN] Already trimmed links file"
+  echo "$HD[7/19]$HDZ Already trimmed links file"
 fi
 
 # Creating the named pipes for python programs
@@ -169,35 +172,35 @@ mkfifo pipe3
 ###########################################
 if [ ! -f redirects.with_ids.txt.gz ]; then
   echo
-  echo "[INFO] Replacing titles in redirects file"
+  echo "$HD[8/19]$HDZ Replacing titles in redirects file"
     (cat pages.txt.gz | gunzip > pipe1 ; cat redirects.txt.gz | gunzip > pipe2) \
     | python "$ROOT_DIR/replace_titles_in_redirects_file.py" pipe1 pipe2 \
     | sort -S 100% -t $'\t' -k 1n,1n \
     | gzip --fast > redirects.with_ids.txt.gz.tmp
   mv redirects.with_ids.txt.gz.tmp redirects.with_ids.txt.gz
 else
-  echo "[WARN] Already replaced titles in redirects file"
+  echo "$HD[8/19]$HDZ Already replaced titles in redirects file"
 fi
 
 if [ ! -f links.with_ids.txt.gz ]; then
   echo
-  echo "[INFO] Replacing titles and redirects in links file"
+  echo "$HD[9/19]$HDZ Replacing titles and redirects in links file"
   (cat pages.txt.gz | gunzip > pipe1 ; cat redirects.with_ids.txt.gz | gunzip > pipe2; cat links.txt.gz | gunzip > pipe3) \
     | python "$ROOT_DIR/replace_titles_and_redirects_in_links_file.py" pipe1 pipe2 pipe3 \
     | gzip --fast > links.with_ids.txt.gz.tmp
   mv links.with_ids.txt.gz.tmp links.with_ids.txt.gz
 else
-  echo "[WARN] Already replaced titles and redirects in links file"
+  echo "$HD[9/19]$HDZ Already replaced titles and redirects in links file"
 fi
 
 if [ ! -f pages.pruned.txt.gz ]; then
   echo
-  echo "[INFO] Pruning pages which are marked as redirects but with no redirect"
+  echo "$HD[10/19]$HDZ Pruning pages which are marked as redirects but with no redirect"
   (cat redirects.with_ids.txt.gz | gunzip > pipe1 ; cat pages.txt.gz | gunzip > pipe2) \
     | python "$ROOT_DIR/prune_pages_file.py" pipe1 pipe2 \
     | gzip --fast > pages.pruned.txt.gz
 else
-  echo "[WARN] Already pruned pages which are marked as redirects but with no redirect"
+  echo "$HD[10/19]$HDZ Already pruned pages which are marked as redirects but with no redirect"
 fi
 
 #####################
@@ -205,7 +208,7 @@ fi
 #####################
 if [ ! -f links.sorted_by_source_id.txt.gz ]; then
   echo
-  echo "[INFO] Sorting links file by source page ID"
+  echo "$HD[11/19]$HDZ Sorting links file by source page ID"
   pv links.with_ids.txt.gz \
     | gunzip \
     | sort -S 80% -t $'\t' -k 1n,1n \
@@ -213,12 +216,12 @@ if [ ! -f links.sorted_by_source_id.txt.gz ]; then
     | gzip --fast > links.sorted_by_source_id.txt.gz.tmp
   mv links.sorted_by_source_id.txt.gz.tmp links.sorted_by_source_id.txt.gz
 else
-  echo "[WARN] Already sorted links file by source page ID"
+  echo "$HD[11/19]$HDZ Already sorted links file by source page ID"
 fi
 
 if [ ! -f links.sorted_by_target_id.txt.gz ]; then
   echo
-  echo "[INFO] Sorting links file by target page ID"
+  echo "$HD[12/19]$HDZ Sorting links file by target page ID"
   pv links.with_ids.txt.gz \
     | gunzip \
     | sort -S 80% -t $'\t' -k 2n,2n \
@@ -226,7 +229,7 @@ if [ ! -f links.sorted_by_target_id.txt.gz ]; then
     | gzip --fast > links.sorted_by_target_id.txt.gz.tmp
   mv links.sorted_by_target_id.txt.gz.tmp links.sorted_by_target_id.txt.gz
 else
-  echo "[WARN] Already sorted links file by target page ID"
+  echo "$HD[12/19]$HDZ Already sorted links file by target page ID"
 fi
 
 
@@ -235,25 +238,25 @@ fi
 #############################
 if [ ! -f links.grouped_by_source_id.txt.gz ]; then
   echo
-  echo "[INFO] Grouping source links file by source page ID"
+  echo "$HD[13/19]$HDZ Grouping source links file by source page ID"
   pv links.sorted_by_source_id.txt.gz \
    | gunzip \
    | awk -F '\t' '$1==last {printf "|%s",$2; next} NR>1 {print "";} {last=$1; printf "%s\t%s",$1,$2;} END{print "";}' \
    | gzip --fast > links.grouped_by_source_id.txt.gz.tmp
   mv links.grouped_by_source_id.txt.gz.tmp links.grouped_by_source_id.txt.gz
 else
-  echo "[WARN] Already grouped source links file by source page ID"
+  echo "$HD[13/19]$HDZ Already grouped source links file by source page ID"
 fi
 
 if [ ! -f links.grouped_by_target_id.txt.gz ]; then
   echo
-  echo "[INFO] Grouping target links file by target page ID"
+  echo "$HD[14/19]$HDZ Grouping target links file by target page ID"
   pv links.sorted_by_target_id.txt.gz \
     | gunzip \
     | awk -F '\t' '$2==last {printf "|%s",$1; next} NR>1 {print "";} {last=$2; printf "%s\t%s",$2,$1;} END{print "";}' \
     | gzip > links.grouped_by_target_id.txt.gz
 else
-  echo "[WARN] Already grouped target links file by target page ID"
+  echo "$HD[14/19]$HDZ Already grouped target links file by target page ID"
 fi
 
 
@@ -262,39 +265,41 @@ fi
 ################################
 if [ ! -f links.with_counts.txt.gz ]; then
   echo
-  echo "[INFO] Combining grouped links files"
+  echo "$HD[15/19]$HDZ Combining grouped links files"
   (cat links.grouped_by_source_id.txt.gz | gunzip > pipe1 ; cat links.grouped_by_target_id.txt.gz | gunzip > pipe2) \
     | python "$ROOT_DIR/combine_grouped_links_files.py" pipe1 pipe2 \
     | gzip --fast > links.with_counts.txt.gz.tmp
   mv links.with_counts.txt.gz.tmp links.with_counts.txt.gz
 else
-  echo "[WARN] Already combined grouped links files"
+  echo "$HD[15/19]$HDZ Already combined grouped links files"
 fi
 
+# Removing the named pipes
+rm pipe1 pipe2 pipe3
 
 ############################
 #  CREATE SQLITE DATABASE  #
 ############################
 if [ ! -f sdow.sqlite ]; then
   echo
-  echo "[INFO] Creating redirects table"
+  echo "$HD[16/19]$HDZ Creating redirects table"
   pv redirects.with_ids.txt.gz | gunzip | sqlite3 sdow.sqlite ".read $ROOT_DIR/../sql/createRedirectsTable.sql"
 
   echo
-  echo "[INFO] Creating pages table"
+  echo "$HD[17/19]$HDZ Creating pages table"
   pv pages.pruned.txt.gz | gunzip | sqlite3 sdow.sqlite ".read $ROOT_DIR/../sql/createPagesTable.sql"
 
   echo
-  echo "[INFO] Creating links table"
+  echo "$HD[18/19]$HDZ Creating links table"
   pv links.with_counts.txt.gz | gunzip | sqlite3 sdow.sqlite ".read $ROOT_DIR/../sql/createLinksTable.sql"
 
   echo
-  echo "[INFO] Compressing SQLite file"
+  echo "$HD[19/19]$HDZ Compressing SQLite file"
   time gzip --best --keep sdow.sqlite
 else
-  echo "[WARN] Already created SQLite database"
+  echo "$HD[1X/19]$HDZ Already created SQLite database"
 fi
 
 
 echo
-echo "[INFO] All done!"
+echo "$HD[DONE]$HDZ All done!"
