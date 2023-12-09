@@ -149,8 +149,9 @@ if [ ! -f links.txt.gz ]; then
     | gunzip \
     | sed -n 's/^INSERT INTO `pagelinks` VALUES (//p' \
     | sed -e 's/),(/\'$'\n/g' \
-    | egrep "^[0-9]+,0,.*,0,[0-9]+$" \
+    | egrep "^[0-9]+,0,.*,0,([0-9]+|NULL)$" \
     | sed 's/,0,[0-9]\+$//' \
+    | sed 's/,0,NULL$//' \
     | sed "s/'$//" \
     | sed -e $"s/,0,'/\t/g" \
     | gzip --fast > links.txt.gz.tmp
