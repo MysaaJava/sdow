@@ -10,15 +10,18 @@ COPY website/public ./public
 COPY website/firebase.json ./
 
 ARG APP_PREFIX="http://localhost:5000/"
-RUN PUBLIC_URL="$APP_PREFIX" npm run build
+ARG SDOW_API_URL="http://localhost:3000/"
+ARG WIKIPEDIA_API_URL="https://en.wikipedia.org/w/api.php" 
+ARG WIKIPEDIA_BASE_URL="https://en.wikipedia.org/wiki/"
+RUN npm run build
 
 
 FROM nginx
 
 WORKDIR /usr/share/nginx/html
-COPY --from=builder /sdow/build /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/nginx.conf
-COPY nginx_entrypoint.sh /
 
-ENTRYPOINT [ "sh", "/nginx_entrypoint.sh" ]
+ARG APP_FOLDER="./"
+COPY --from=builder /sdow/build /usr/share/nginx/html/$APP_FOLDER
+
+COPY nginx.conf /etc/nginx/nginx.conf
 
