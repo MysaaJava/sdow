@@ -2,22 +2,21 @@
   "interactivity": {
     "events": {
       "onClick": {
-        "enable": true,
+        "enable": false,
         "mode": "push"
       },
       "onHover": {
         "enable": true,
-        "mode": "repulse"
+        "mode": "bubble"
       },
       "resize": true
     },
     "modes": {
-      "push": {
-        "quantity": 2
-      },
-      "repulse": {
-        "distance": 90,
-        "duration": 0.4
+      "bubble": {
+        "distance": 240,
+        "duration": 3,
+        "opacity": 0.2,
+        "size": 12
       }
     }
   },

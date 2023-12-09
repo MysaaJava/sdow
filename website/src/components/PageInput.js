@@ -6,6 +6,8 @@ import axios from 'axios';
 import React from 'react';
 import Autosuggest from 'react-autosuggest';
 
+import env from 'react-dotenv';
+
 import {getRandomPageTitle} from '../utils';
 
 import PageInputSuggestion from './PageInputSuggestion';
@@ -67,20 +69,18 @@ class PageInput extends React.Component {
       gpslimit: 5, // Return at most five results
       origin: '*',
     };
-
     // TODO: add helper for making API requests to WikiMedia API
     axios({
       method: 'get',
-      url: process.env.WIKIPEDIA_API_URL,
+      url: env["WIKIPEDIA_API_URL"],
       params: queryParams,
       headers: {
         'Api-User-Agent':
-          'Six Degrees of Wikipedia/1.0 (https://www.sixdegreesofwikipedia.com/; wenger.jacob@gmail.com)',
+          env["WIKIPEDIA_API_USERAGENT"],
       },
     })
       .then((response) => {
         const suggestions = [];
-
         const pageResults = get(response, 'data.query.pages', {});
         forEach(pageResults, ({ns, index, title, terms, thumbnail}) => {
           // Due to https://phabricator.wikimedia.org/T189139, results will not always be limited

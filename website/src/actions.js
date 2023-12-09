@@ -1,5 +1,6 @@
 import get from 'lodash/get';
 import axios from 'axios';
+import env from 'react-dotenv';
 import {replace} from 'connected-react-router';
 
 // Router location changed action from react-router-dom.
@@ -74,10 +75,9 @@ export function fetchShortestPaths() {
     sourcePageTitle = sourcePageTitle || sourcePagePlaceholderText;
     targetPageTitle = targetPageTitle || targetPagePlaceholderText;
 
-    // Update the page URL, which will update the soure and target page inputs if needed.
+    // Update the page URL, which will update the source and target page inputs if needed.
     dispatch(
       replace({
-        pathname: '/',
         search: `?source=${sourcePageTitle}&target=${targetPageTitle}`,
       })
     );
@@ -87,7 +87,7 @@ export function fetchShortestPaths() {
     const startTimeInMilliseconds = Date.now();
 
     return axios({
-      url: '$#SDOW_API_URL#$'
+      url: env['SDOW_API_URL'],
       method: 'POST',
       data: {
         source: sourcePageTitle,
