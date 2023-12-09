@@ -13,6 +13,7 @@ ARG APP_PREFIX="http://localhost:5000/"
 ARG SDOW_API_URL="http://localhost:3000/"
 ARG WIKIPEDIA_API_URL="https://en.wikipedia.org/w/api.php" 
 ARG WIKIPEDIA_BASE_URL="https://en.wikipedia.org/wiki/"
+ARG WIKIPEDIA_API_USERAGENT=""
 RUN npm run build
 
 
