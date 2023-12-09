@@ -99,7 +99,6 @@ if [ ! -f redirects.txt.gz ]; then
   # Zip into output file
   pv $REDIRECTS_FILENAME \
     | gunzip \
-    | tr -cd "[:print:]\n" \
     | sed -n 's/^INSERT INTO `redirect` VALUES (//p' \
     | sed -e 's/),(/\'$'\n/g' \
     | egrep "^[0-9]+,0," \
@@ -124,7 +123,6 @@ if [ ! -f pages.txt.gz ]; then
   # Zip into output file
   pv $PAGES_FILENAME \
     | gunzip \
-    | tr -cd "[:print:]\n" \
     | sed -n 's/^INSERT INTO `page` VALUES (//p' \
     | sed -e 's/),(/\'$'\n/g' \
     | egrep "^[0-9]+,0," \
@@ -149,7 +147,6 @@ if [ ! -f links.txt.gz ]; then
   # Zip into output file
   pv $LINKS_FILENAME \
     | gunzip \
-    | tr -cd "[:print:]\n" \
     | sed -n 's/^INSERT INTO `pagelinks` VALUES (//p' \
     | sed -e 's/),(/\'$'\n/g' \
     | egrep "^[0-9]+,0,.*,0,[0-9]+$" \
