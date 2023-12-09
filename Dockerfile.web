@@ -3,7 +3,7 @@ FROM node AS builder
 WORKDIR /sdow
 
 COPY website/package.json website/package-lock.json ./
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 COPY website/src ./src
 COPY website/public ./public
