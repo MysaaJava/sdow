@@ -6,8 +6,6 @@ import axios from 'axios';
 import React from 'react';
 import Autosuggest from 'react-autosuggest';
 
-import env from 'react-dotenv';
-
 import {getRandomPageTitle} from '../utils';
 
 import PageInputSuggestion from './PageInputSuggestion';
@@ -72,11 +70,11 @@ class PageInput extends React.Component {
     // TODO: add helper for making API requests to WikiMedia API
     axios({
       method: 'get',
-      url: env["WIKIPEDIA_API_URL"],
+      url: window.env.WIKIPEDIA_API_URL,
       params: queryParams,
       headers: {
         'Api-User-Agent':
-          env["WIKIPEDIA_API_USERAGENT"],
+          window.env.WIKIPEDIA_API_USERAGENT,
       },
     })
       .then((response) => {

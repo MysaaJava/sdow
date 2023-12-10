@@ -1,6 +1,5 @@
 import get from 'lodash/get';
 import axios from 'axios';
-import env from 'react-dotenv';
 import {replace} from 'connected-react-router';
 
 // Router location changed action from react-router-dom.
@@ -87,7 +86,7 @@ export function fetchShortestPaths() {
     const startTimeInMilliseconds = Date.now();
 
     return axios({
-      url: env['SDOW_API_URL'],
+      url: window.env.SDOW_API_URL,
       method: 'POST',
       data: {
         source: sourcePageTitle,

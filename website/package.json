@@ -51,9 +51,9 @@
   "scripts": {
     "analyze": "source-map-explorer build/static/js/*",
     "precommit": "lint-staged",
-    "start": "react-dotenv && react-scripts start",
-    "build": "react-dotenv && react-scripts build",
-    "serve": "react-dotenv && serve build",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "serve": "serve build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   },
@@ -62,8 +62,5 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ],
-  "react-dotenv": {
-    "whitelist": ["SDOW_API_URL","WIKIPEDIA_API_URL","WIKIPEDIA_BASE_URL"]
-  }
+  ]
 }

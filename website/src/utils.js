@@ -1,11 +1,10 @@
 import clone from 'lodash/clone';
 
-import env from 'react-dotenv';
 import pageTitles from './resources/pageTitles.json';
 import wikipediaFacts from './resources/wikipediaFacts.json';
 
 export const getWikipediaPageUrl = (pageTitle) => {
-  const baseUrl = env['WIKIPEDIA_BASE_URL'];
+  const baseUrl = window.env.WIKIPEDIA_BASE_URL;
   const sanitizedPageTitle = pageTitle.replace(/ /g, '_');
   return `${baseUrl}${encodeURIComponent(sanitizedPageTitle)}`;
 };
