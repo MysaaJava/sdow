@@ -8,8 +8,6 @@ import {ThemeProvider} from 'styled-components';
 import {Route, Routes, BrowserRouter} from 'react-router-dom';
 import configureStore, {history} from './configureStore.js';
 
-import registerServiceWorker from './registerServiceWorker';
-
 import Home from './components/Home';
 
 import theme from './resources/theme.json';
@@ -84,5 +82,3 @@ root.render(
         <App />
     </React.StrictMode>
 );
-
-registerServiceWorker();
