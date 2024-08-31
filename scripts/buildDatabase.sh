@@ -34,6 +34,7 @@ SHA1SUM_FILENAME="${WLANG}wiki-$DOWNLOAD_DATE-sha1sums.txt"
 REDIRECTS_FILENAME="${WLANG}wiki-$DOWNLOAD_DATE-redirect.sql.gz"
 PAGES_FILENAME="${WLANG}wiki-$DOWNLOAD_DATE-page.sql.gz"
 LINKS_FILENAME="${WLANG}wiki-$DOWNLOAD_DATE-pagelinks.sql.gz"
+LINKTARGET_FILENAME="${WLANG}wiki-$DOWNLOAD_DATE-linktarget.sql.gz"
 
 
 # Make the output directory if it doesn't already exist and move to it
@@ -82,7 +83,11 @@ download_file "sha1sums" $SHA1SUM_FILENAME 1
 download_file "redirects" $REDIRECTS_FILENAME 2
 download_file "pages" $PAGES_FILENAME 3
 download_file "links" $LINKS_FILENAME 4
+download_file "linktarget" $LINKTARGET_FILENAME 5
 
+sleep 1000000
+
+exit
 ##########################
 #  TRIM WIKIPEDIA DUMPS  #
 ##########################
@@ -97,14 +102,14 @@ if [ ! -f redirects.txt.gz ]; then
   # Replace namespace with a tab
   # Remove everything starting at the to page name's closing apostrophe
   # Zip into output file
-  pv $REDIRECTS_FILENAME \
-    | gunzip \
-    | sed -n 's/^INSERT INTO `redirect` VALUES (//p' \
-    | sed -e 's/),(/\'$'\n/g' \
-    | egrep "^[0-9]+,0," \
-    | sed -e $"s/,0,'/\t/g" \
-    | sed -e "s/','.*//g" \
-    | gzip --fast > redirects.txt.gz.tmp
+    pv $REDIRECTS_FILENAME \
+      | gunzip \
+      | sed -n 's/^INSERT INTO `redirect` VALUES (//p' \
+      | sed -e 's/),(/\'$'\n/g' \
+      | egrep "^[0-9]+,0," \
+      | sed -e $"s/,0,'/\t/g" \
+      | sed -e "s/','.*//g" \
+      | gzip --fast > redirects.txt.gz.tmp
   mv redirects.txt.gz.tmp redirects.txt.gz
 else
   echo "$HD[5/19]$HDZ Already trimmed redirects file"
@@ -149,12 +154,10 @@ if [ ! -f links.txt.gz ]; then
     | gunzip \
     | sed -n 's/^INSERT INTO `pagelinks` VALUES (//p' \
     | sed -e 's/),(/\'$'\n/g' \
-    | egrep "^[0-9]+,0,.*,0,([0-9]+|NULL)$" \
-    | sed 's/,0,[0-9]\+$//' \
-    | sed 's/,0,NULL$//' \
-    | sed "s/'$//" \
-    | sed -e $"s/,0,'/\t/g" \
+    | egrep "^[0-9]+,0,[0-9]+$" \
+    | sed -e $"s/,0,/\t/g" \
     | gzip --fast > links.txt.gz.tmp
+
   mv links.txt.gz.tmp links.txt.gz
 else
   echo "$HD[7/19]$HDZ Already trimmed links file"

@@ -39,15 +39,13 @@ linksf = open(LINKS_FILE,'r')
 # Loop through each line in the links file, replacing titles with IDs, applying redirects, and
 # removing nonexistent pages, writing the result to stdout.
 for line in linksf:
-  [source_page_id, target_page_title] = line.rstrip('\n').split('\t')
-  
+  [source_page_id, target_page_id] = line.rstrip('\n').split('\t')
+
   source_page_exists = source_page_id in ALL_PAGE_IDS
 
   if source_page_exists:
     source_page_id = REDIRECTS.get(source_page_id, source_page_id)
 
-    target_page_id = PAGE_TITLES_TO_IDS.get(target_page_title)
-
-    if target_page_id is not None and source_page_id != target_page_id:
-      target_page_id = REDIRECTS.get(target_page_id, target_page_id)
+    if source_page_id != target_page_id:
+      target_page_id = REDIRECTS.get(target_page_id,target_page_id)
       print('\t'.join([source_page_id, target_page_id]))
