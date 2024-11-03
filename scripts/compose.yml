@@ -1,0 +1,28 @@
+# Use root/example as user/password credentials
+version: '3.1'
+
+services:
+
+  db:
+    image: mariadb
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: sdow
+      MARIADB_USER: sdow
+      MARIADB_PASSWORD: sdow
+      MARIADB_DATABASE: sdow
+    volumes:
+      - /home/mysaa/Downloads/wikipedia-db:/var/lib/mysql:Z
+      - /etc/mysql/mariadb.conf.d/50-server.cnf:/home/mysaa/Documents/Projets/eclipse-workspace/sdow/scripts/50-server.cnf
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8568:8080
+  python:
+    environment:
+      TERM: xterm-256color
+    image: sdowdb
+    build: .
+    volumes:
+      - /home/mysaa/Documents/Projets/eclipse-workspace/sdow/scripts:/sdow/scripts
