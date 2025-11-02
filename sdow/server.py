@@ -15,8 +15,11 @@ from helpers import InvalidRequest, fetch_wikipedia_pages_info
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 
+sdow_database = os.environ.get('SDOW_DATABASE','/')
+searches_database = os.environ.get('SEARCHES_DATABASE','/')
+
 # Connect to the SDOW database.
-database = Database(sdow_database='./sdow.sqlite', searches_database='./searches.sqlite')
+database = Database(sdow_database=sdow_database, searches_database=searches_database)
 
 # Initialize the Flask app.
 app = Flask(__name__)

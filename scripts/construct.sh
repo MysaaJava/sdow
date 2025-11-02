@@ -353,7 +353,7 @@ if [ ! -f sdow.sqlite ]; then
   echo "$HD[19/$TOT]$HDZ Compressing SQLite file"
   pv sdow.sqlite | gzip --best --keep > sdow.sqlite.gz
 else
-  echo "$HD[1X/19]$HDZ Already created SQLite database"
+  echo "$HD[1X/$TOT]$HDZ Already created SQLite database"
 fi
 
 
