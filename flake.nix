@@ -26,10 +26,11 @@
           if [ -z "$2" ]
           then echo "Second argument should be a path to the searches database"; exit 1
           fi
+          GUNICORN_PORT=''${GUNICORN_PORT:-8000}
 
           export SDOW_DATABASE=$1
           export SEARCHES_DATABASE=$2
-          gunicorn -b 0.0.0.0:8000 server:app
+          gunicorn -b "0.0.0.0:$GUNICORN_PORT" server:app
         '';
       };
     in {
