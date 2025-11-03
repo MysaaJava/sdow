@@ -33,6 +33,21 @@
           gunicorn -b "0.0.0.0:$GUNICORN_PORT" server:app
         '';
       };
+      python-db = pkgs.python3.withPackages (pp: with pp;[
+        tqdm
+      ]);
+      sdow-db-folder = ./scripts;
+      sdow-db = pkgs.writeShellApplication {
+        name = "sdow-db";
+        runtimeInputs = [
+          python-db
+          pkgs.sqlite
+          pkgs.pv
+        ];
+        text = ''
+          ${pkgs.bash}/bin/bash ${sdow-db-folder}/buildDatabase.sh "$@"
+        '';
+      };
     in {
 
     packages.x86_64-linux =  {
@@ -65,12 +80,17 @@
           cp -r . $out
         '';
       };
+      sdow-db = sdow-db;
     };
     apps.x86_64-linux = {
       default = self.apps.x86_64-linux.sdow-api;
       sdow-api = {
         type = "app";
         program = "${sdow-api-gunicorn}/bin/sdow-api";
+      };
+      sdow-db = {
+        type = "app";
+        program = "${sdow-db}/bin/sdow-db";
       };
     };
   };

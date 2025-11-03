@@ -13,7 +13,7 @@ WLANG=fr
 
 # By default, the latest Wikipedia dump will be downloaded. If a download date in the format
 # YYYYMMDD is provided as the first argument, it will be used instead.
-if [[ $# -eq 0 ]]; then
+if [[ "$#" -eq 1 ]]; then
   DOWNLOAD_DATE=$(wget -q -O- https://dumps.wikimedia.org/${WLANG}wiki/ | grep -Po '\d{8}' | sort | tail -n1)
 else
   if [ ${#1} -ne 8 ]; then

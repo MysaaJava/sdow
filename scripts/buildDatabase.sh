@@ -9,7 +9,7 @@ export LC_ALL=C
 HD=$(tput bold)$(tput setaf 5)
 HDZ=$(tput sgr0)
 
-WLANG=fr
+WLANG=''${WLANG:-fr}
 
 # By default, the latest Wikipedia dump will be downloaded. If a download date in the format
 # YYYYMMDD is provided as the first argument, it will be used instead.
@@ -24,8 +24,12 @@ else
   fi
 fi
 
-ROOT_DIR=`pwd`
-OUT_DIR="dump"
+ROOT_DIR=$(dirname "$0")
+OUT_DIR="${OUT_DIR:-dump}"
+DISABLE_COMPRESS=${DISABLE_COMPRESS:-false}
+if ! ( [ "$DISABLE_COMPRESS" = "true" ] || [ "$DISABLE_COMPRESS" = "false" ] )
+then echo "DISABLE_COMPRESS env should either be true or false"; exit 1
+fi
 
 DOWNLOAD_URL="https://dumps.wikimedia.org/${WLANG}wiki/$DOWNLOAD_DATE"
 TORRENT_URL="https://tools.wmflabs.org/dump-torrents/${WLANG}wiki/$DOWNLOAD_DATE"
@@ -85,9 +89,7 @@ download_file "pages" $PAGES_FILENAME 3
 download_file "links" $LINKS_FILENAME 4
 download_file "linktarget" $LINKTARGET_FILENAME 5
 
-sleep 1000000
 
-exit
 ##########################
 #  TRIM WIKIPEDIA DUMPS  #
 ##########################
@@ -285,21 +287,27 @@ rm pipe1 pipe2 pipe3
 if [ ! -f sdow.sqlite ]; then
   echo
   echo "$HD[16/19]$HDZ Creating redirects table"
-  pv redirects.with_ids.txt.gz | gunzip | sqlite3 sdow.sqlite ".read $ROOT_DIR/../sql/createRedirectsTable.sql"
+  pv redirects.with_ids.txt.gz | gunzip | sqlite3 sdow.sqlite ".read $ROOT_DIR/sql/createRedirectsTable.sql"
 
   echo
   echo "$HD[17/19]$HDZ Creating pages table"
-  pv pages.pruned.txt.gz | gunzip | sqlite3 sdow.sqlite ".read $ROOT_DIR/../sql/createPagesTable.sql"
+  pv pages.pruned.txt.gz | gunzip | sqlite3 sdow.sqlite ".read $ROOT_DIR/sql/createPagesTable.sql"
 
   echo
   echo "$HD[18/19]$HDZ Creating links table"
-  pv links.with_counts.txt.gz | gunzip | sqlite3 sdow.sqlite ".read $ROOT_DIR/../sql/createLinksTable.sql"
+  pv links.with_counts.txt.gz | gunzip | sqlite3 sdow.sqlite ".read $ROOT_DIR/sql/createLinksTable.sql"
 
   echo
-  echo "$HD[19/19]$HDZ Compressing SQLite file"
-  pv sdow.sqlite | gzip --best --keep > sdow.sqlite.gz
 else
   echo "$HD[1X/19]$HDZ Already created SQLite database"
+fi
+if [ -f sdow.sqlite.gz ];
+then echo "$HD[19/19]$HDZ Already compressed SQLite database"
+elif $DISABLE_COMPRESS
+then echo "$HD[19/19]$HDZ Skipping compressing SQLite database"
+else
+  pv sdow.sqlite | gzip --best --keep > sdow.sqlite.gz.tmp
+  mv sdow.sqlite.gz.tmp sdow.sqlite.gz
 fi
 
 
