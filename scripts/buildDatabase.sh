@@ -10,7 +10,11 @@ LANGWIKI=frwiki
 # By default, the latest Wikipedia dump will be downloaded. If a download date in the format
 # YYYYMMDD is provided as the first argument, it will be used instead.
 if [[ $# -eq 0 ]]; then
+<<<<<<< HEAD
   DOWNLOAD_DATE=$(wget -q -O- https://dumps.wikimedia.org/$LANGWIKI/ | grep -Po '\d{8}' | sort | tail -n1)
+=======
+  DOWNLOAD_DATE=$(wget -q -O- https://dumps.wikimedia.org/enwiki/ | grep -Po '\d{8}' | sort | tail -n1)
+>>>>>>> upstream
 else
   if [ ${#1} -ne 8 ]; then
     echo "[ERROR] Invalid download date provided: $1"
@@ -23,9 +27,14 @@ fi
 ROOT_DIR=`pwd`
 OUT_DIR="dump"
 
+<<<<<<< HEAD
 DELETE_PROGRESSIVELY=false
 DOWNLOAD_URL="https://dumps.wikimedia.org/$LANGWIKI/$DOWNLOAD_DATE"
 TORRENT_URL="https://tools.wmflabs.org/dump-torrents/$LANGWIKI/$DOWNLOAD_DATE"
+=======
+DOWNLOAD_URL="https://dumps.wikimedia.org/enwiki/$DOWNLOAD_DATE"
+TORRENT_URL="https://dump-torrents.toolforge.org/enwiki/$DOWNLOAD_DATE"
+>>>>>>> upstream
 
 SHA1SUM_FILENAME="$LANGWIKI-$DOWNLOAD_DATE-sha1sums.txt"
 
@@ -54,8 +63,10 @@ function download_file() {
     if [ $1 != sha1sums ] && command -v aria2c > /dev/null; then
       echo "[INFO] Downloading $1 file via torrent"
       time aria2c --summary-interval=0 --console-log-level=warn --seed-time=0 \
-        "$TORRENT_URL/$2.torrent"
-    else
+        "$TORRENT_URL/$2.torrent" 2>&1 | grep -v "ERROR\|Exception" || true
+    fi
+    
+    if [ ! -f $2 ]; then
       echo "[INFO] Downloading $1 file via wget"
       time wget --progress=dot:giga "$DOWNLOAD_URL/$2"
     fi

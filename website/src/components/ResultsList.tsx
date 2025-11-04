@@ -1,10 +1,13 @@
 import * as d3 from 'd3';
-import React from 'react';
-import LazyLoad from 'react-lazyload';
+import React, {useMemo, useState} from 'react';
 import styled from 'styled-components';
 
 import defaultPageThumbnail from '../images/defaultPageThumbnail.png';
 import {WikipediaPage, WikipediaPageId} from '../types';
+import {LazyLoadWrapper} from './common/LazyLoadWrapper';
+
+/** Number of results to load at a time. */
+const RESULT_BATCH_LOAD_SIZE = 50;
 
 const ResultsListWrapper = styled.div`
   margin: 0 auto;
@@ -14,16 +17,39 @@ const ResultsListWrapper = styled.div`
   justify-content: center;
 `;
 
-const ResultsListOtherPathsText = styled.p`
+const LoadMoreButton = styled.button`
   margin: 16px auto 40px auto;
-  text-align: center;
+  display: block;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  color: ${({theme}) => theme.colors.creme};
+  background-color: ${({theme}) => theme.colors.darkGreen};
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
 `;
 
 const ResultsListHeader = styled.p`
   text-align: center;
-  margin: 32px 0;
+  margin: 32px 0 8px 0;
   font-size: 28px;
   font-weight: bold;
+  color: ${({theme}) => theme.colors.darkGreen};
+`;
+
+const ResultsListSubHeader = styled.p`
+  text-align: center;
+  margin: 8px 0 32px 0;
+  font-size: 16px;
   color: ${({theme}) => theme.colors.darkGreen};
 `;
 
@@ -143,24 +169,37 @@ export const ResultsList: React.FC<{
   readonly paths: readonly WikipediaPageId[][];
   readonly pagesById: Record<WikipediaPageId, WikipediaPage>;
 }> = ({paths, pagesById}) => {
-  const maxResultsToDisplay = 50;
+  const [maxResultsToDisplay, setMaxResultsToDisplay] = useState(RESULT_BATCH_LOAD_SIZE);
   const numHiddenPaths = paths.length - maxResultsToDisplay;
+  const hasMorePaths = numHiddenPaths > 0;
 
-  // Only display a limited number of results, lazily loading all of them.
-  const resultsListItems = paths.slice(0, maxResultsToDisplay).map((path, i) => (
-    <LazyLoad once={true} offset={200} key={i}>
-      <ResultListItem path={path} pagesById={pagesById} />
-    </LazyLoad>
-  ));
+  const handleLoadMore = () => {
+    setMaxResultsToDisplay((prev) => prev + RESULT_BATCH_LOAD_SIZE);
+  };
+
+  const resultsListItems = useMemo(
+    () => paths.slice(0, maxResultsToDisplay),
+    [paths, maxResultsToDisplay]
+  );
 
   return (
     <>
       <ResultsListHeader>Individual paths</ResultsListHeader>
-      <ResultsListWrapper>{resultsListItems}</ResultsListWrapper>
-      {numHiddenPaths > 0 && (
-        <ResultsListOtherPathsText>
-          Not showing {numHiddenPaths} more path{numHiddenPaths !== 1 && 's'}
-        </ResultsListOtherPathsText>
+      <ResultsListSubHeader>
+        Showing {Math.min(paths.length, maxResultsToDisplay)} of {paths.length} result
+        {paths.length !== 1 ? 's' : ''}
+      </ResultsListSubHeader>
+      <LazyLoadWrapper fallback={null}>
+        <ResultsListWrapper>
+          {resultsListItems.map((path, i) => (
+            <ResultListItem key={i} path={path} pagesById={pagesById} />
+          ))}
+        </ResultsListWrapper>
+      </LazyLoadWrapper>
+      {hasMorePaths && (
+        <LoadMoreButton onClick={handleLoadMore}>
+          Load {Math.min(numHiddenPaths, RESULT_BATCH_LOAD_SIZE)} more results
+        </LoadMoreButton>
       )}
     </>
   );

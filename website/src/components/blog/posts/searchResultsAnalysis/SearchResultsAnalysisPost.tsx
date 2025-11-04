@@ -1,4 +1,3 @@
-import {Helmet} from 'react-helmet';
 import styled from 'styled-components';
 
 import {getNumberWithCommas, getWikipediaPageUrl} from '../../../../utils';
@@ -127,9 +126,7 @@ const Divider = styled.div`
 
 export const SearchResultsAnalysisPost = () => (
   <Wrapper>
-    <Helmet>
-      <title>{`${TITLE} | Blog | Six Degrees of Wikipedia`}</title>
-    </Helmet>
+    <title>{`${TITLE} | Blog | Six Degrees of Wikipedia`}</title>
 
     <Title>{TITLE}</Title>
     <Subtitle>
@@ -433,7 +430,7 @@ export const SearchResultsAnalysisPost = () => (
       these stats, you can find them all on{' '}
       <StyledTextLink
         text="this project's GitHub"
-        href="https://github.com/jwngr/sdow/tree/master/website/src/components/blog/posts/searchResultsAnalysis/queries.txt"
+        href="https://github.com/jwngr/sdow/tree/main/website/src/components/blog/posts/searchResultsAnalysis/queries.txt"
       />
       . I will likely go into more detail on my server and database setup in a future post.
     </P>
