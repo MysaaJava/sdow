@@ -43,6 +43,13 @@
           python-db
           pkgs.sqlite
           pkgs.pv
+          pkgs.gnugrep
+          pkgs.ncurses5
+          pkgs.wget
+          pkgs.coreutils-full
+          pkgs.gzip
+          pkgs.gnused
+          pkgs.gawkInteractive
         ];
         text = ''
           ${pkgs.bash}/bin/bash ${sdow-db-folder}/buildDatabase.sh "$@"
