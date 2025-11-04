@@ -6,8 +6,14 @@ set -euo pipefail
 # UNIX commands.
 export LC_ALL=C
 
-HD=$(tput bold)$(tput setaf 5)
-HDZ=$(tput sgr0)
+if (which tput) && [ -n ${TERM+x} ]
+then
+  HD=$(tput bold)$(tput setaf 5)
+  HDZ=$(tput sgr0)
+else
+  HD=""
+  HDZ=""
+fi
 
 WLANG=''${WLANG:-fr}
 

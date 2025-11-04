@@ -44,7 +44,6 @@
           pkgs.sqlite
           pkgs.pv
           pkgs.gnugrep
-          pkgs.ncurses5
           pkgs.wget
           pkgs.coreutils-full
           pkgs.gzip
