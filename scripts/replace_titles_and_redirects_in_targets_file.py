@@ -5,36 +5,23 @@ non-existing pages, and replaces redirects with the pages to which they redirect
 Output is written to stdout.
 """
 
-import io
 import sys
-import gzip
 
 # Validate inputs
 if len(sys.argv) < 4:
   print('[ERROR] Not enough arguments provided!')
-  print('[INFO] Usage: {0} <pages_file> <redirects_file> <targets_file>'.format(sys.argv[0]))
+  print('[INFO] Usage: {0} <pages_pipe> <redirects_pipe> <targets_pipe>'.format(sys.argv[0]))
   sys.exit()
 
-PAGES_FILE = sys.argv[1]
-REDIRECTS_FILE = sys.argv[2]
-TARGETS_FILE = sys.argv[3]
-
-if not PAGES_FILE.endswith('.gz'):
-  print('[ERROR] Pages file must be gzipped.')
-  sys.exit()
-
-if not REDIRECTS_FILE.endswith('.gz'):
-  print('[ERROR] Redirects file must be gzipped.')
-  sys.exit()
-
-if not TARGETS_FILE.endswith('.gz'):
-  print('[ERROR] Targets file must be gzipped.')
-  sys.exit()
+PAGES_PIPE = sys.argv[1]
+REDIRECTS_PIPE = sys.argv[2]
+TARGETS_PIPE = sys.argv[3]
 
 # Create a set of all page IDs and a dictionary of page titles to their corresponding IDs.
 ALL_PAGE_IDS = set()
 PAGE_TITLES_TO_IDS = {}
-for line in io.BufferedReader(gzip.open(PAGES_FILE, 'rb')):
+linesf = open(PAGES_PIPE, 'rb')
+for line in linesf:
   [page_id, page_title, _] = line.rstrip(b'\n').split(b'\t')
   ALL_PAGE_IDS.add(page_id)
   PAGE_TITLES_TO_IDS[page_title] = page_id

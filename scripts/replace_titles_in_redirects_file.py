@@ -4,39 +4,32 @@ Replaces page titles in the redirects file with their corresponding IDs.
 Output is written to stdout.
 """
 
-import io
 import sys
-import gzip
+from tqdm import tqdm
 
 # Validate input arguments.
 if len(sys.argv) < 3:
   print('[ERROR] Not enough arguments provided!')
-  print('[INFO] Usage: {0} <pages_file> <redirects_file>'.format(sys.argv[0]))
+  print('[INFO] Usage: {0} <pages_pipe> <redirects_pipe>'.format(sys.argv[0]))
   sys.exit()
 
-PAGES_FILE = sys.argv[1]
-REDIRECTS_FILE = sys.argv[2]
-
-if not PAGES_FILE.endswith('.gz'):
-  print('[ERROR] Pages file must be gzipped.')
-  sys.exit()
-
-if not REDIRECTS_FILE.endswith('.gz'):
-  print('[ERROR] Redirects file must be gzipped.')
-  sys.exit()
+PAGES_PIPE = sys.argv[1]
+REDIRECTS_PIPE = sys.argv[2]
 
 # Create a set of all page IDs and a dictionary of page titles to their corresponding IDs.
+pagesf = open(PAGES_PIPE,'rb')
 ALL_PAGE_IDS = set()
 PAGE_TITLES_TO_IDS = {}
-for line in io.BufferedReader(gzip.open(PAGES_FILE, 'rb')):
+for line in pagesf:
   [page_id, page_title,_] = line.rstrip(b'\n').split(b'\t')
   ALL_PAGE_IDS.add(page_id)
   PAGE_TITLES_TO_IDS[page_title] = page_id
 
 # Create a dictionary of redirects, replace page titles in the redirects file with their
 # corresponding IDs and ignoring pages which do not exist.
+redirectsf = open(REDIRECTS_PIPE,'rb')
 REDIRECTS = {}
-for line in io.BufferedReader(gzip.open(REDIRECTS_FILE, 'rb')):
+for line in redirectsf:
   [source_page_id, target_page_title] = line.rstrip(b'\n').split(b'\t')
 
   source_page_exists = source_page_id in ALL_PAGE_IDS
