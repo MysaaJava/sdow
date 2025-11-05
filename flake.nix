@@ -7,27 +7,32 @@
 
   outputs = { self, nixpkgs }: let
       pkgs = import nixpkgs {system = "x86_64-linux";};
-      sdow-website = pkgs.buildNpmPackage {
-        name = "sdow";
-        buildInputs = with pkgs; [
-          nodejs_latest
-        ];
-        src = ./website;
+      sdow-website = {lang ? null, wikipediaApiUrl ? null, sdowApiUrl ? null, sdowUserAgent ? null }:
+        let extraArgs = {} //
+          (if wikipediaApiUrl == null then {VITE_WIKIPEDIA_API_URL=wikipediaApiUrl;} else
+           if lang == null then {VITE_WIKIPEDIA_API_URL="https://${lang}.wikipedia.org/w/api.php";} else {}) //
+          (if sdowApiUrl == null then {VITE_SDOW_API_URL=sdowApiUrl;} else {}) //
+          (if sdowUserAgent == null then {VITE_SDOW_USER_AGENT=sdowUserAgent;} else {});
+        in pkgs.buildNpmPackage ({
+          name = "sdow";
+          buildInputs = with pkgs; [
+            nodejs_latest
+          ];
+          src = ./website;
+          npmDeps = pkgs.importNpmLock {
+            npmRoot = ./website;
+          };
 
-        npmDeps = pkgs.importNpmLock {
-          npmRoot = ./website;
-        };
+          npmFlags = [ "--legacy-peer-deps" ];
 
-        npmFlags = [ "--legacy-peer-deps" ];
+          npmConfigHook = pkgs.importNpmLock.npmConfigHook;
 
-        npmConfigHook = pkgs.importNpmLock.npmConfigHook;
-
-        installPhase = ''
-          cp -r ./dist/ $out
-        '';
-      };
+          installPhase = ''
+            cp -r ./dist/ $out
+	  '';
+        } // extraArgs);
       sdow-http = pkgs.writeShellScript "sdow" ''
-        ${pkgs.simple-http-server}/bin/simple-http-server ${self.packages.x86_64-linux.sdow} "$@"
+        ${pkgs.simple-http-server}/bin/simple-http-server ${sdow-website {}} "$@"
       '';
       python-gunicorn = pkgs.python3.withPackages (pp: with pp;[
         flask
@@ -89,7 +94,8 @@
 
     packages.x86_64-linux =  {
       default = self.packages.x86_64-linux.sdow;
-      sdow = sdow-website;
+      sdow = sdow-website {};
+      sdow-lang = sdow-website;
 
       sdow-api = pkgs.stdenv.mkDerivation {
         name = "sdow-api";
