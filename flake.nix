@@ -7,6 +7,28 @@
 
   outputs = { self, nixpkgs }: let
       pkgs = import nixpkgs {system = "x86_64-linux";};
+      sdow-website = pkgs.buildNpmPackage {
+        name = "sdow";
+        buildInputs = with pkgs; [
+          nodejs_latest
+        ];
+        src = ./website;
+
+        npmDeps = pkgs.importNpmLock {
+          npmRoot = ./website;
+        };
+
+        npmFlags = [ "--legacy-peer-deps" ];
+
+        npmConfigHook = pkgs.importNpmLock.npmConfigHook;
+
+        installPhase = ''
+          cp -r ./dist/ $out
+        '';
+      };
+      sdow-http = pkgs.writeShellScript "sdow" ''
+        ${pkgs.simple-http-server}/bin/simple-http-server ${self.packages.x86_64-linux.sdow} "$@"
+      '';
       python-gunicorn = pkgs.python3.withPackages (pp: with pp;[
         flask
         flask-compress
@@ -14,12 +36,16 @@
         gunicorn
         protobuf
         requests
+        google-cloud-logging
       ]);
       sdow-api-gunicorn = pkgs.writeShellApplication {
         name = "sdow-api";
         runtimeInputs = [ python-gunicorn ];
         text = ''
           cd "${self.packages.x86_64-linux.sdow-api}"
+          if [ "$#" -lt 2 ]
+          then echo "This script takes two arguments: path to sdow database, and path to searches database"; exit 1
+          fi
           if [ ! -f "$1" ]
           then echo "First argument should be a path to the sdow database"; exit 1
           fi
@@ -63,25 +89,7 @@
 
     packages.x86_64-linux =  {
       default = self.packages.x86_64-linux.sdow;
-      sdow = pkgs.buildNpmPackage {
-        name = "sdow";
-        buildInputs = with pkgs; [
-          nodejs_latest
-        ];
-        src = ./website;
-
-        npmDeps = pkgs.importNpmLock {
-          npmRoot = ./website;
-        };
-
-        npmFlags = [ "--legacy-peer-deps" ];
-
-        npmConfigHook = pkgs.importNpmLock.npmConfigHook;
-
-        installPhase = ''
-          cp -r build/ $out
-        '';
-      };
+      sdow = sdow-website;
 
       sdow-api = pkgs.stdenv.mkDerivation {
         name = "sdow-api";
@@ -95,6 +103,10 @@
     };
     apps.x86_64-linux = {
       default = self.apps.x86_64-linux.sdow-api;
+      sdow = {
+        type = "app";
+        program = "${sdow-http}";
+      };
       sdow-api = {
         type = "app";
         program = "${sdow-api-gunicorn}/bin/sdow-api";

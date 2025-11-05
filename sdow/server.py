@@ -2,6 +2,7 @@
 Server web framework.
 """
 
+import os
 import time
 import logging
 import google.cloud.logging
@@ -10,12 +11,16 @@ from flask_cors import CORS
 from flask_compress import Compress
 from flask import Flask, request, jsonify
 
-from sdow.database import Database
-from sdow.helpers import InvalidRequest, fetch_wikipedia_pages_info
+from database import Database
+from helpers import InvalidRequest, fetch_wikipedia_pages_info
 
+
+
+sdow_database = os.environ.get('SDOW_DATABASE','./sdow.sqlite')
+searches_database = os.environ.get('SEARCHES_DATABASE','./searches.sqlite')
 
 # Connect to the SDOW database.
-database = Database(sdow_database='./sdow.sqlite', searches_database='./searches.sqlite')
+database = Database(sdow_database=sdow_database, searches_database=searches_database)
 
 # Initialize the Flask app.
 app = Flask(__name__)
