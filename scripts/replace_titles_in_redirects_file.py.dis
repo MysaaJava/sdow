@@ -29,7 +29,6 @@ if not REDIRECTS_FILE.endswith('.gz'):
 ALL_TARGET_IDS = set()
 TARGET_TITLES_TO_IDS = {}
 for line in io.BufferedReader(gzip.open(TARGETS_FILE, 'rb')):
-  print("LALIGNE",line.rstrip(b'\n').split(b'\t'))
   [page_id, page_title,_] = line.rstrip(b'\n').split(b'\t')
   ALL_TARGET_IDS.add(page_id)
   TARGET_TITLES_TO_IDS[page_title] = page_id

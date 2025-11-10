@@ -4,51 +4,72 @@ Combines the incoming and outgoing links (as well as their counts) for each page
 Output is written to stdout.
 """
 
-import io
 import sys
 import gzip
-from collections import defaultdict
 
-# Validate input arguments.
+# validate input arguments.
 if len(sys.argv) < 2:
   print('[ERROR] Not enough arguments provided!')
-  print('[INFO] Usage: {0} <outgoing_links_file> <incoming_links_file>'.format(sys.argv[0]))
+  print('[INFO] Usage: {0} <outgoing_links_file> <incoming_links_file>'.format(sys.argv[0]), file=sys.stderr)
   sys.exit()
 
 OUTGOING_LINKS_FILE = sys.argv[1]
 INCOMING_LINKS_FILE = sys.argv[2]
 
 if not OUTGOING_LINKS_FILE.endswith('.gz'):
-  print('[ERROR] Outgoing links file must be gzipped.')
+  print('[ERROR] Outgoing links file must be gzipped.', file=sys.stderr)
   sys.exit()
 
 if not INCOMING_LINKS_FILE.endswith('.gz'):
-  print('[ERROR] Incoming links file must be gzipped.')
+  print('[ERROR] Incoming links file must be gzipped.', file=sys.stderr)
   sys.exit()
 
-# Create a dictionary of page IDs to their incoming and outgoing links.
-LINKS = defaultdict(lambda: defaultdict(str))
-# outgoing is [0], incoming is [1]
-for line in io.BufferedReader(gzip.open(OUTGOING_LINKS_FILE, 'rb')):
-  [source_page_id, target_page_ids] = line.rstrip(b'\n').split(b'\t')
-  LINKS[int(source_page_id)][0] = target_page_ids
+def parse_line(line):
+  parts = line.rstrip(b'\n').split(b'\t', 1)
+  return (int(parts[0]), parts[1] if len(parts) > 1 else b'')
 
-for line in io.BufferedReader(gzip.open(INCOMING_LINKS_FILE, 'rb')):
-  [target_page_id, source_page_ids] = line.rstrip(b'\n').split(b'\t')
-  LINKS[int(target_page_id)][1] = source_page_ids
+def file_iterator(filename):
+  with gzip.open(filename, 'rb') as f:
+    for line in f:
+      yield parse_line(line)
 
-# For each page in the links dictionary, print out its incoming and outgoing links as well as their
-# counts.
-for page_id, links in LINKS.items():
-  outgoing_links = links.get(0, b'')
-  outgoing_links_count = 0 if outgoing_links==b'' else len(
-      outgoing_links.split(b'|'))
+# Merge the two sorted files, we're using gnerators instead of dicts to stream the content
+# and not load the entire files into memory, this helps with RAM consumption a lot.
 
-  incoming_links = links.get(1, b'')
-  incoming_links_count = 0 if incoming_links==b'' else len(
-      incoming_links.split(b'|'))
+outgoing_iter = file_iterator(OUTGOING_LINKS_FILE)
+incoming_iter = file_iterator(INCOMING_LINKS_FILE)
 
-  columns = [str(page_id).encode(), str(outgoing_links_count).encode(), str(
-      incoming_links_count).encode(), outgoing_links, incoming_links]
+outgoing_current = next(outgoing_iter, None)
+incoming_current = next(incoming_iter, None)
 
-  print(b'\t'.join(columns).decode())
+while outgoing_current is not None or incoming_current is not None:
+  if outgoing_current is None:
+    page_id, incoming_links = incoming_current
+    outgoing_links = b''
+    incoming_current = next(incoming_iter, None)
+  elif incoming_current is None:
+    page_id, outgoing_links = outgoing_current
+    incoming_links = b''
+    outgoing_current = next(outgoing_iter, None)
+  elif outgoing_current[0] < incoming_current[0]:
+    page_id, outgoing_links = outgoing_current
+    incoming_links = b''
+    outgoing_current = next(outgoing_iter, None)
+  elif incoming_current[0] < outgoing_current[0]:
+    page_id, incoming_links = incoming_current
+    outgoing_links = b''
+    incoming_current = next(incoming_iter, None)
+  else:
+    page_id = outgoing_current[0]
+    outgoing_links = outgoing_current[1]
+    incoming_links = incoming_current[1]
+    outgoing_current = next(outgoing_iter, None)
+    incoming_current = next(incoming_iter, None)
+  
+  outgoing_links_count = 0 if outgoing_links == b'' else len(outgoing_links.split(b'|'))
+  incoming_links_count = 0 if incoming_links == b'' else len(incoming_links.split(b'|'))
+  
+  columns = [str(page_id).encode(), str(outgoing_links_count).encode(), 
+             str(incoming_links_count).encode(), outgoing_links, incoming_links]
+  
+ 
