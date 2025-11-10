@@ -24,7 +24,7 @@ else
 fi
 
 # Root directory is that of this script
-ROOT_DIR=$(dirname "$0")
+ROOT_DIR=$(cd "$(dirname "$0")" && pwd)
 
 DOWNLOAD_URL="https://dumps.wikimedia.org/${WLANG}wiki/$DOWNLOAD_DATE"
 TORRENT_URL="https://dump-torrents.toolforge.org/${WLANG}wiki/$DOWNLOAD_DATE"
@@ -188,8 +188,8 @@ if $DELETE_PROGRESSIVELY; then rm $TARGETS_FILENAME; fi
 if [ ! -f redirects.with_ids.txt.gz ]; then
   echo
   echo "[INFO] Replacing titles in redirects file"
-  time python "$ROOT_DIR/replace_titles_in_redirects_file.py" pages.txt.gz redirects.txt.gz \
-    | sort -S 100% -t $'\t' -k 1n,1n \
+  time python3 "$ROOT_DIR/replace_titles_in_redirects_file.py" pages.txt.gz redirects.txt.gz \
+    | sort -S 80% -t $'\t' -k 1n,1n \
     | pigz --fast > redirects.with_ids.txt.gz.tmp
   mv redirects.with_ids.txt.gz.tmp redirects.with_ids.txt.gz
 else
@@ -200,7 +200,7 @@ if $DELETE_PROGRESSIVELY; then rm redirects.txt.gz; fi
 if [ ! -f targets.with_ids.txt.gz ]; then
   echo
   echo "[INFO] Replacing titles and redirects in targets file"
-  time python "$ROOT_DIR/replace_titles_and_redirects_in_targets_file.py" pages.txt.gz redirects.with_ids.txt.gz targets.txt.gz \
+  time python3 "$ROOT_DIR/replace_titles_and_redirects_in_targets_file.py" pages.txt.gz redirects.with_ids.txt.gz targets.txt.gz \
     | pigz --fast > targets.with_ids.txt.gz.tmp
   mv targets.with_ids.txt.gz.tmp targets.with_ids.txt.gz
 else
@@ -211,7 +211,7 @@ if $DELETE_PROGRESSIVELY; then rm targets.txt.gz; fi
 if [ ! -f links.with_ids.txt.gz ]; then
   echo
   echo "[INFO] Replacing titles and redirects in links file"
-  time python "$ROOT_DIR/replace_titles_and_redirects_in_links_file.py" pages.txt.gz redirects.with_ids.txt.gz targets.with_ids.txt.gz links.txt.gz \
+  time python3 "$ROOT_DIR/replace_titles_and_redirects_in_links_file.py" pages.txt.gz redirects.with_ids.txt.gz targets.with_ids.txt.gz links.txt.gz \
     | pigz --fast > links.with_ids.txt.gz.tmp
   mv links.with_ids.txt.gz.tmp links.with_ids.txt.gz
 else
@@ -222,7 +222,7 @@ if $DELETE_PROGRESSIVELY; then rm links.txt.gz targets.with_ids.txt.gz; fi
 if [ ! -f pages.pruned.txt.gz ]; then
   echo
   echo "[INFO] Pruning pages which are marked as redirects but with no redirect"
-  time python "$ROOT_DIR/prune_pages_file.py" pages.txt.gz redirects.with_ids.txt.gz \
+  time python3 "$ROOT_DIR/prune_pages_file.py" pages.txt.gz redirects.with_ids.txt.gz \
     | pigz --fast > pages.pruned.txt.gz
 else
   echo "[WARN] Already pruned pages which are marked as redirects but with no redirect"
@@ -236,7 +236,7 @@ if [ ! -f links.sorted_by_source_id.txt.gz ]; then
   echo
   echo "[INFO] Sorting links file by source page ID"
   time pigz -dc links.with_ids.txt.gz \
-    | sort -S 80% -t $'\t' -k 1n,1n \
+    | sort -T . -S 80% -t $'\t' -k 1n,1n \
     | uniq \
     | pigz --fast > links.sorted_by_source_id.txt.gz.tmp
   mv links.sorted_by_source_id.txt.gz.tmp links.sorted_by_source_id.txt.gz
@@ -248,7 +248,7 @@ if [ ! -f links.sorted_by_target_id.txt.gz ]; then
   echo
   echo "[INFO] Sorting links file by target page ID"
   time pigz -dc links.with_ids.txt.gz \
-    | sort -S 80% -t $'\t' -k 2n,2n \
+    | sort -T . -S 80% -t $'\t' -k 2n,2n \
     | uniq \
     | pigz --fast > links.sorted_by_target_id.txt.gz.tmp
   mv links.sorted_by_target_id.txt.gz.tmp links.sorted_by_target_id.txt.gz
@@ -291,7 +291,7 @@ if $DELETE_PROGRESSIVELY; then rm links.sorted_by_target_id.txt.gz; fi
 if [ ! -f links.with_counts.txt.gz ]; then
   echo
   echo "[INFO] Combining grouped links files"
-  time python "$ROOT_DIR/combine_grouped_links_files.py" links.grouped_by_source_id.txt.gz links.grouped_by_target_id.txt.gz \
+  time python3 "$ROOT_DIR/combine_grouped_links_files.py" links.grouped_by_source_id.txt.gz links.grouped_by_target_id.txt.gz \
     | pigz --fast > links.with_counts.txt.gz.tmp
   mv links.with_counts.txt.gz.tmp links.with_counts.txt.gz
 else

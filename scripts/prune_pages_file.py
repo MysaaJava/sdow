@@ -37,5 +37,5 @@ for line in io.BufferedReader(gzip.open(REDIRECTS_FILE, 'rb')):
 for line in io.BufferedReader(gzip.open(PAGES_FILE, 'rb')):
   [page_id, page_title, is_redirect] = line.rstrip(b'\n').split(b'\t')
 
-  if True or is_redirect == '0' or page_id in REDIRECTS:
+  if is_redirect == '0' or page_id in REDIRECTS:
     print(b'\t'.join([page_id, page_title, is_redirect]).decode())
