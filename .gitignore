@@ -1,6 +1,9 @@
 # Mock databases
-sdow/sdow.sqlite
-sdow/searches.sqlite
+sdow.sqlite
+searches.sqlite
+
+# Nix build result
+/result
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

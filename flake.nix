@@ -9,10 +9,10 @@
       pkgs = import nixpkgs {system = "x86_64-linux";};
       sdow-website = {lang ? null, wikipediaApiUrl ? null, sdowApiUrl ? null, sdowUserAgent ? null }:
         let extraArgs = {} //
-          (if wikipediaApiUrl == null then {VITE_WIKIPEDIA_API_URL=wikipediaApiUrl;} else
-           if lang == null then {VITE_WIKIPEDIA_API_URL="https://${lang}.wikipedia.org/w/api.php";} else {}) //
-          (if sdowApiUrl == null then {VITE_SDOW_API_URL=sdowApiUrl;} else {}) //
-          (if sdowUserAgent == null then {VITE_SDOW_USER_AGENT=sdowUserAgent;} else {});
+          (if wikipediaApiUrl != null then {VITE_WIKIPEDIA_API_URL=wikipediaApiUrl;} else {}) //
+          (if lang != null then {VITE_WIKIPEDIA_API_URL="https://${lang}.wikipedia.org/w/api.php";} else {}) //
+          (if sdowApiUrl != null then {VITE_SDOW_API_URL=sdowApiUrl;} else {}) //
+          (if sdowUserAgent != null then {VITE_SDOW_USER_AGENT=sdowUserAgent;} else {});
         in pkgs.buildNpmPackage ({
           name = "sdow";
           buildInputs = with pkgs; [
