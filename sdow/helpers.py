@@ -3,10 +3,11 @@ Helper classes and methods.
 """
 
 import requests
+import os
 
-
-WIKIPEDIA_API_URL = 'https://en.wikipedia.org/w/api.php'
-
+WIKIPEDIA_API_URL = os.environ.get('WIKIPEDIA_API_URL','https://en.wikipedia.org/w/api.php')
+WIKIPEDIA_USER_AGENT = os.environ.get('WIKIPEDIA_USER_AGENT','Six Degrees of Wikipedia/1.0 (https://www.sixdegreesofwikipedia.com/; wenger.jacob@gmail.com)')
+WIKIPEDIA_BROKEN_URL_TEMPLATE = os.environ.get('WIKIPEDIA_BROKEN_URL_TEMPLATE','https://en.wikipedia.org/wiki/{0}')
 
 def fetch_wikipedia_pages_info(page_ids, database):
   """Fetched page information such as title, URL, and image thumbnail URL for the provided page IDs.
@@ -44,7 +45,7 @@ def fetch_wikipedia_pages_info(page_ids, database):
     # Identify this client as per Wikipedia API guidelines.
     # https://www.mediawiki.org/wiki/API:Main_page#Identifying_your_client
     headers = {
-        'User-Agent': 'Six Degrees of Wikipedia/1.0 (https://www.sixdegreesofwikipedia.com/; wenger.jacob@gmail.com)',
+        'User-Agent': WIKIPEDIA_USER_AGENT,
     }
 
     req = requests.get(WIKIPEDIA_API_URL, params=query_params, headers=headers)
@@ -69,7 +70,7 @@ def fetch_wikipedia_pages_info(page_ids, database):
         pages_info[page_id] = {
             'id': page_id,
             'title': page_title,
-            'url': 'https://en.wikipedia.org/wiki/{0}'.format(page_title)
+            'url': WIKIPEDIA_BROKEN_URL_TEMPLATE.format(page_title)
         }
       else:
         pages_info[page_id] = {
